@@ -655,7 +655,7 @@
 
   <div class="grid-3">
     <div class="card">
-      <video src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">ramp · default</div>
         <p class="card-caption">Left edge reads frame t, right edge reads t − 1279. The dancer's motion is sheared diagonally across time.</p>
@@ -663,7 +663,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-slitscan-tent.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-tent.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent</div>
         <p class="card-caption">Both edges read the present; the center looks furthest back. Produces a bilateral temporal mirror.</p>
@@ -671,7 +671,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-reverse-150.mp4"     autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-reverse-150.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">reverse · max-delay 150</div>
         <p class="card-caption">Inverted ramp with a reduced spread of 150 frames — the right edge now leads. Delay range compressed for comparison.</p>
@@ -698,7 +698,7 @@
 
   <div class="grid-2">
     <div class="card">
-      <video src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis x (default)</div>
         <p class="card-caption">Vertical column bands. Horizontal motion shears the figure temporally across the frame width.</p>
@@ -706,7 +706,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-axis-y-ramp.mp4"     autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-axis-y-ramp.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · ramp</div>
         <p class="card-caption">Horizontal row bands. Vertical motion — like the dancer's arms and legs — is sheared temporally top-to-bottom.</p>
@@ -717,7 +717,7 @@
 
   <div class="grid-2">
     <div class="card">
-      <video src="2020-axis-y-tent.mp4"     autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-axis-y-tent.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · tent</div>
         <p class="card-caption">Tent profile on the y-axis. Top and bottom rows are "now"; the horizontal mid-band looks furthest back.</p>
@@ -725,7 +725,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-axis-y-tent-wrap.mp4" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-axis-y-tent-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · tent · wrap</div>
         <p class="card-caption">Same as above with <code>--fill wrap</code>, eliminating the black fill zones at clip boundaries for seamless looping.</p>
@@ -759,7 +759,7 @@
 
   <div class="grid-3">
     <div class="card">
-      <video src="2020-ramp-300.mp4"         autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-300.mp4"         autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 300 frames (~10s)</div>
         <p class="card-caption">Tight temporal window. The figure is recognisable; distortion is subtle shearing.</p>
@@ -767,7 +767,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-ramp-900.mp4"         autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-900.mp4"         autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 900 frames (~30s)</div>
         <p class="card-caption">Wide spread. The trailing edge is 30 seconds behind the leading edge within a single output frame.</p>
@@ -775,7 +775,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-slitscan-ramp.mp4"    autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp.mp4"    autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 1279 (full extent, default)</div>
         <p class="card-caption">Every pixel column references a unique frame. The full 992-frame clip is visible in a single output frame as a temporal panorama.</p>
@@ -786,21 +786,21 @@
 
   <div class="grid-3">
     <div class="card">
-      <video src="2020-ramp-300-wrap.mp4"    autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-300-wrap.mp4"    autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 300 · wrap</div>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --max-delay 300 --fill wrap</div>
       </div>
     </div>
     <div class="card">
-      <video src="2020-ramp-900-wrap.mp4"    autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-900-wrap.mp4"    autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 900 · wrap</div>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --max-delay 900 --fill wrap</div>
       </div>
     </div>
     <div class="card">
-      <video src="2020-slitscan-ramp-wrap.mp4" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 1279 · wrap</div>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --fill wrap</div>
@@ -832,7 +832,7 @@
 
   <div class="grid-2">
     <div class="card">
-      <video src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 1 (default)</div>
         <p class="card-caption">Smooth temporal gradient — 1280 individual column sources, each a unique frame.</p>
@@ -840,7 +840,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-banded.mp4"           autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-banded.mp4"           autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 40</div>
         <p class="card-caption">32 wide bands of 40px each. The seams between temporal blocks become legible. Each block shows the same column of pixels from its assigned frame.</p>
@@ -851,7 +851,7 @@
 
   <div class="grid-2">
     <div class="card">
-      <video src="2020-banded-wrap.mp4"      autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-banded-wrap.mp4"      autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 40 · wrap</div>
         <p class="card-caption">Banded with fill=wrap. The clip loops seamlessly at band boundaries, allowing infinite playback as an installation.</p>
@@ -859,7 +859,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-reverse-150-wrap.mp4" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-reverse-150-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">reverse · max-delay 150 · wrap</div>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --profile reverse --max-delay 150 --fill wrap</div>
@@ -933,7 +933,7 @@
 
   <div class="fill-compare">
     <div class="card">
-      <video src="2020-slitscan-ramp.mp4"      autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp.mp4"      autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">fill black (default)</div>
         <p class="card-caption">The lagging-edge fill zone sweeps left as the clip progresses and resets at the end.</p>
@@ -941,7 +941,7 @@
       </div>
     </div>
     <div class="card">
-      <video src="2020-slitscan-ramp-wrap.mp4"  autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-slitscan-ramp-wrap.mp4"  autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">fill wrap — infinite loop</div>
         <p class="card-caption">Same parameters; every band is always populated. The clip loops without any visible seam.</p>
@@ -952,7 +952,7 @@
 
   <div class="grid-1">
     <div class="card">
-      <video src="2020-wrap-loop.mp4"           autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-wrap-loop.mp4"           autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">wrap loop — installation demo</div>
         <p class="card-caption">
@@ -1012,7 +1012,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   <h3>Modulated delay — temporal spread breathes</h3>
   <div class="grid-2">
     <div class="card">
-      <video src="2020-ramp-moddelay.mp4"        autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-moddelay.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">mod max_delay · sine · 0.25 Hz · depth 400</div>
         <p class="card-caption">The temporal window expands and contracts sinusoidally. At its widest, the rake spans deep time; at its narrowest, the image nearly collapses to a single moment.</p>
@@ -1020,7 +1020,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       </div>
     </div>
     <div class="card">
-      <video src="2020-ramp-moddelay-wrap.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-moddelay-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">mod max_delay · wrap</div>
         <p class="card-caption">Same modulation with wrap fill. The breathing temporal spread loops without interruption.</p>
@@ -1032,7 +1032,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   <h3>Modulated vanguard — the rake shifts</h3>
   <div class="grid-2">
     <div class="card">
-      <video src="2020-tent-modvanguard.mp4"     autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-tent-modvanguard.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · mod vanguard · sine · 0.1 Hz · depth 0.4</div>
         <p class="card-caption">The tent profile's peak oscillates — the temporal fold shifts back and forth, swinging the center of symmetry across the frame.</p>
@@ -1040,7 +1040,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       </div>
     </div>
     <div class="card">
-      <video src="2020-tent-modvanguard-wrap.mp4" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-tent-modvanguard-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · mod vanguard · wrap</div>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --fill wrap</div>
@@ -1051,7 +1051,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   <h3>Compound modulation — both destinations</h3>
   <div class="grid-2">
     <div class="card">
-      <video src="2020-tent-both-mod.mp4"        autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-tent-both-mod.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · mod vanguard + mod max_delay</div>
         <p class="card-caption">Two independent oscillators — vanguard at 0.1 Hz and max_delay at 0.05 Hz — produce compound motion with a beat period of ~20s.</p>
@@ -1059,7 +1059,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       </div>
     </div>
     <div class="card">
-      <video src="2020-tent-both-mod-wrap.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-tent-both-mod-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · compound mod · wrap</div>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --mod "max_delay=sine:rate=0.05hz,depth=300" --fill wrap</div>
@@ -1070,7 +1070,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   <h3>Y-axis modulation</h3>
   <div class="grid-2">
     <div class="card">
-      <video src="2020-y-modvanguard.mp4"        autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-y-modvanguard.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · mod vanguard · sine</div>
         <p class="card-caption">The modulated vanguard on a y-axis scan causes the temporal fold to ripple horizontally, tracing the dancer's vertical movements through time.</p>
@@ -1078,7 +1078,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       </div>
     </div>
     <div class="card">
-      <video src="2020-y-modvanguard-wrap.mp4"   autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-y-modvanguard-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · mod vanguard · wrap</div>
         <div class="card-cmd">--axis y --mod "vanguard=sine:rate=0.1hz,depth=0.4" --fill wrap</div>
@@ -1249,7 +1249,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
 
   <div class="grid-3">
     <div class="gif-card">
-      <video src="2020-ramp-loop.webm" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-ramp-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">ramp · wrap · gif</div>
         <p class="card-caption">Classic ramp profile as an infinite GIF. 256-color dithering visible at full scale.</p>
@@ -1257,7 +1257,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       </div>
     </div>
     <div class="gif-card">
-      <video src="2020-tent-mod-loop.webm" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-tent-mod-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · mod vanguard · wrap · gif</div>
         <p class="card-caption">Modulated tent profile — the temporal fold shifts while the palette flickers at peaks of oscillation.</p>
@@ -1265,7 +1265,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       </div>
     </div>
     <div class="gif-card">
-      <video src="2020-y-loop.webm" autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-y-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · wrap · gif</div>
         <p class="card-caption">Y-axis scan as GIF. Horizontal banding from the row-slicer is amplified by palette quantization.</p>
@@ -1328,7 +1328,7 @@ slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --pro
 
   <div class="grid-1">
     <div class="card">
-      <video src="2020-trumbull-center.mp4"  autoplay muted loop playsinline></video>
+      <video preload="none" data-src="2020-trumbull-center.mp4"  autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">trumbull · slit-source 0.5 · ramp · wrap</div>
         <p class="card-caption">
@@ -1367,16 +1367,36 @@ slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --pro
 </footer>
 
 <script>
-  // Autoplay videos when in viewport, pause when out.
+  // Lazy-load videos as they approach the viewport, then autoplay
+  // when visible and pause when out. Deferring the src assignment means
+  // the first videos' bandwidth isn't blocked by later ones downloading.
   // Fallback for browsers that restrict file:// autoplay.
   (function () {
     const videos = document.querySelectorAll('video');
 
+    const load = (v) => {
+      if (!v.dataset.src) return;
+      v.src = v.dataset.src;
+      delete v.dataset.src;
+    };
+
     if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((entries) => {
+      // Start fetching before a video scrolls into view so it's ready to
+      // play, but still top-down: nearer videos claim bandwidth first.
+      const loader = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            load(entry.target);
+            loader.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '600px 0px' });
+
+      const player = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const v = entry.target;
           if (entry.isIntersecting) {
+            load(v);
             v.play().catch(() => {});
           } else {
             v.pause();
@@ -1386,8 +1406,12 @@ slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --pro
 
       videos.forEach((v) => {
         v.muted = true;
-        io.observe(v);
+        loader.observe(v);
+        player.observe(v);
       });
+    } else {
+      // No IntersectionObserver: load everything.
+      videos.forEach((v) => { v.muted = true; load(v); });
     }
 
     // Click-to-play toggle for any video that failed autoplay
