@@ -571,12 +571,10 @@
 
   <div class="diagram">
     <pre>
-  ┌──────────┐   ┌───────────┐   ┌───────────────┐   ┌─────────────────────────────┐   ┌──────────┐
-  │  Decode  │──▶│ Normalize │──▶│ Frame Buffer  │──▶│         Engine              │──▶│  Encode  │
-  │  (PyAV)  │   │  resize   │   │  full | ring  │   │  delay_map(x, t, params)    │   │  (PyAV)  │
-  └──────────┘   └───────────┘   └───────────────┘   │    profile (ramp/tent/rev)  │   └──────────┘
-                                                      │    modulation (LFO system)  │
-                                                      └─────────────────────────────┘
+  ┌──────────┐   ┌───────────┐   ┌───────────────┐   ┌──────────────────────────────┐   ┌──────────┐
+  │  Decode  │──▶│ Normalize │──▶│ Frame Buffer  │──▶│           Engine             │──▶│  Encode  │
+  │  (PyAV)  │   │  resize   │   │  full · ring  │   │  delay_map · profile · mods  │   │  (PyAV)  │
+  └──────────┘   └───────────┘   └───────────────┘   └──────────────────────────────┘   └──────────┘
     </pre>
   </div>
 
@@ -896,6 +894,12 @@
     right to left. With <code>--fill wrap</code>, those same indices are mapped
     to <code>index % 992</code>, connecting the end of the clip to its beginning.
     The output video has no seam and can play indefinitely in an installation loop.
+  </p>
+  <p>
+    Note: the black band visible in the <code>--fill black</code> examples below
+    is also partly a property of the source footage — the clip opens and closes
+    on near-black frames. This makes the fill zone especially clean here and
+    usefully illustrates the temporal boundary sweeping across the frame.
   </p>
 
   <div class="fill-compare">
@@ -1324,7 +1328,7 @@ slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --pro
     <div class="footer-left">
       <div>slitscan CLI — time-displacement rendering toolkit</div>
       <div>Python 3.11 · PyAV · NumPy · Typer · Pillow</div>
-      <div>Source: <a href="https://github.com/z/slitscan-cli">github.com/z/slitscan-cli</a></div>
+      <div>Source: <a href="https://github.com/zakhap/slitscan-cli">github.com/zakhap/slitscan-cli</a></div>
     </div>
     <div class="footer-right">
       <div>Source footage: 2020 workout video, 1280×720, 30fps, 992 frames</div>

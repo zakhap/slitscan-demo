@@ -1,6 +1,6 @@
 # slitscan demo
 
-Static demo site for [slitscan-cli](../slitscan-cli), a Python CLI toolkit for time-displacement slit-scan rendering of video.
+Static demo site for [slitscan-cli](https://github.com/zakhap/slitscan-cli), a Python CLI toolkit for time-displacement slit-scan rendering of video.
 
 ## Viewing
 
@@ -32,7 +32,7 @@ All examples use a single 1280×720 30fps clip (992 frames, ~33 seconds).
 
 ## Tool
 
-Source and full documentation: [`slitscan-cli`](../slitscan-cli)
+Source and full documentation: [github.com/zakhap/slitscan-cli](https://github.com/zakhap/slitscan-cli)
 
 ```
 pip install -e ../slitscan-cli
