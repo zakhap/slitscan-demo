@@ -377,7 +377,8 @@
 
     /* GIF cards — let natural height show */
     .gif-card { background: var(--surface); overflow: hidden; }
-    .gif-card img { width: 100%; display: block; background: #000; }
+    .gif-card img,
+    .gif-card video { width: 100%; display: block; background: #000; aspect-ratio: 16/9; object-fit: cover; }
     .gif-card .card-body { padding: 13px 15px 15px; border-top: 1px solid var(--border-2); }
 
     /* ── Fill compare — stack within a card ─────── */
@@ -1215,7 +1216,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
 
   <div class="grid-3">
     <div class="gif-card">
-      <img src="2020-ramp-loop.gif" alt="GIF — ramp loop" loading="lazy">
+      <video src="2020-ramp-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">ramp · wrap · gif</div>
         <p class="card-caption">Classic ramp profile as an infinite GIF. 256-color dithering visible at full scale.</p>
@@ -1223,7 +1224,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       </div>
     </div>
     <div class="gif-card">
-      <img src="2020-tent-mod-loop.gif" alt="GIF — tent modulated" loading="lazy">
+      <video src="2020-tent-mod-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent · mod vanguard · wrap · gif</div>
         <p class="card-caption">Modulated tent profile — the temporal fold shifts while the palette flickers at peaks of oscillation.</p>
@@ -1231,7 +1232,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       </div>
     </div>
     <div class="gif-card">
-      <img src="2020-y-loop.gif" alt="GIF — y-axis loop" loading="lazy">
+      <video src="2020-y-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · wrap · gif</div>
         <p class="card-caption">Y-axis scan as GIF. Horizontal banding from the row-slicer is amplified by palette quantization.</p>
