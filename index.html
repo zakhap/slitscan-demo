@@ -505,6 +505,7 @@
       <li><a href="#bands">Bands</a></li>
       <li><a href="#fill">Fill &amp; Loop</a></li>
       <li><a href="#modulation">Modulation</a></li>
+      <li><a href="#grid">Grid</a></li>
       <li><a href="#collapse">Collapse</a></li>
       <li><a href="#gif">GIF</a></li>
       <li><a href="#trumbull">Trumbull</a></li>
@@ -1088,11 +1089,233 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
 </section>
 
 <!-- ═══════════════════════════════════════════
-     § 8  COLLAPSE / PHOTOFINISH
+     § 8  GRID — 2D MOSAIC
+═══════════════════════════════════════════ -->
+<section class="section" id="grid">
+  <div class="sec-hd">
+    <div class="sec-num">§ 08</div>
+    <h2>Grid — 2D mosaic slit-scan</h2>
+    <p class="sec-lead">
+      Standard slit-scan slices the frame into 1D bands along one axis. <strong>Grid mode</strong>
+      splits it into a <code>COLS×ROWS</code> mosaic where every <em>cell</em> reads from
+      its own source frame — each tile is frozen at a different moment, and the whole
+      mosaic animates as the clip plays. At <code>Nx1</code> it reduces to vertical bands,
+      at <code>1xN</code> to horizontal bands.
+    </p>
+  </div>
+
+  <div class="formula">
+    <div class="label">Grid gather — per-cell source frame</div>
+<span class="cm">1D band:  </span><span class="hl">source(band, t)</span>  =  t − delay<span class="hl">[col]</span>            <span class="cm">← a band spans the full height</span>
+<span class="cm">2D grid:  </span><span class="hl">source(cell, t)</span>  =  t − delay<span class="hl">[row, col]</span>       <span class="cm">← every tile its own moment</span>
+  </div>
+
+  <p>
+    Where each cell's time comes from is configurable. By default the chosen
+    <code>--profile</code> is evaluated across the columns and the rows and combined
+    with <code>--grid-combine</code> (<code>avg</code>, <code>max</code>, <code>min</code>,
+    <code>multiply</code>). With <code>ramp</code> averaged across both axes the result is
+    a diagonal time-field: read corner-to-corner and you read through the whole clip.
+    On this footage the static parkway stays coherent while the moving figure
+    fragments tile-by-tile into different moments.
+  </p>
+
+  <h3>Grid size — from four moments to a near-continuous field</h3>
+  <p>
+    Same diagonal delay field (<code>ramp</code>, averaged, <code>--fill wrap</code> so
+    every tile always shows real footage); only the tile count changes. Coarse grids
+    quantize the clip into a few stark moments; fine grids approach a smooth temporal gradient.
+  </p>
+
+  <div class="grid-3">
+    <div class="card">
+      <video preload="none" data-src="2020-grid-2x2.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">2 × 2 — four moments</div>
+        <p class="card-caption">The clip quartered in time: each quadrant is a different second of the dance, the figure split across the seam.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 2x2 --fill wrap</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-4x4.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">4 × 4</div>
+        <p class="card-caption">Sixteen tiles along the diagonal time-field. The body begins to shred into staggered copies of itself.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 4x4 --fill wrap</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-8x8.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">8 × 8</div>
+        <p class="card-caption">Static background reads nearly continuous across tiles; only the moving figure betrays the per-tile time offset.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 8x8 --fill wrap</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-16x16.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">16 × 16</div>
+        <p class="card-caption">The diagonal gradient is now legible as a smooth wash of time across the frame.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 16x16 --fill wrap</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-32x18.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">32 × 18</div>
+        <p class="card-caption">Fine tiling approaches a continuous per-pixel surface — the grid dissolving back toward classic slit-scan.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 32x18 --fill wrap</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Delay shape — a radial time field</h3>
+  <p>
+    The delay field need not be a ramp. A <code>tent</code> profile, combined with
+    <code>max</code> across the two axes, puts the <em>vanguard</em> (time zero, "now")
+    at the center cell and rakes backward toward the corners — concentric rings of time.
+  </p>
+
+  <div class="grid-1">
+    <div class="card">
+      <video preload="none" data-src="2020-grid-tent-radial.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">10 × 10 · tent · combine max</div>
+        <p class="card-caption">Center tiles show the present; time recedes outward to the corners. The figure passing through the center stays current while its echoes lag at the edges.</p>
+        <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 10x10 --profile tent --grid-combine max --fill wrap</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Spatial LFO fields — time driven by the cell's position</h3>
+  <p>
+    The modulation oscillators from <a href="#modulation">§ 07</a> can drive the grid too —
+    but here their phase runs over the cell's grid position instead of output time.
+    Each <code>--grid-mod</code> is an oscillator on the <code>col</code> or <code>row</code>
+    axis (<code>rate</code> in cycles across that axis); contributions sum, then scale to
+    <code>--max-delay</code>. One oscillator per axis gives an interference field of times.
+  </p>
+
+  <div class="code-block"><pre><span class="cm"># One sine across the columns → vertical stripes of oscillating time</span>
+slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
+  --grid-mod <span class="st">"col=sine:rate=2,depth=1"</span> --max-delay <span class="st">400</span> --fill wrap
+
+<span class="cm"># A sine on each axis → a 2D plaid interference field</span>
+slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
+  --grid-mod <span class="st">"col=sine:rate=2,depth=0.5"</span> <span class="kw">\</span>
+  --grid-mod <span class="st">"row=sine:rate=2,depth=0.5"</span> --max-delay <span class="st">400</span> --fill wrap</pre></div>
+
+  <div class="grid-3">
+    <div class="card">
+      <video preload="none" data-src="2020-grid-lfo-stripes.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">col sine · rate 2 · depth 1</div>
+        <p class="card-caption">A single oscillator across the columns: each vertical strip of tiles is frozen at an oscillating moment, so time waves left-to-right.</p>
+        <div class="card-cmd">--grid 16x16 --grid-mod "col=sine:rate=2,depth=1" --max-delay 400</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-lfo-plaid.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">col + row sine · plaid</div>
+        <p class="card-caption">Sines on both axes sum into a 2D interference field — tiles ripple in time along a woven, plaid-like pattern.</p>
+        <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.5" --grid-mod "row=sine:rate=2,depth=0.5"</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-lfo-tri.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">triangle · both axes</div>
+        <p class="card-caption">Triangle oscillators give a harder, angular time-field — sharper boundaries between temporal zones than the sine plaid.</p>
+        <div class="card-cmd">--grid 20x12 --grid-mod "col=triangle:rate=3,depth=0.6" --grid-mod "row=triangle:rate=2,depth=0.4"</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Dual modulation — an oscillator on each axis</h3>
+  <p>
+    The richest fields come from <em>two</em> <code>--grid-mod</code>s — one on
+    <code>col</code>, one on <code>row</code> — summed per cell. The two oscillators need
+    not match: different rates, waveforms, phases, and depths between the axes carve very
+    different temporal terrains out of the same footage. Because contributions sum and then
+    clamp to <code>[0, max-delay]</code>, pushing both depths high produces flat temporal
+    plateaus with hard walls; keeping them low gives smooth interference.
+  </p>
+
+  <div class="code-block"><pre><span class="cm"># Two oscillators, one per axis — the general dual-modulation form</span>
+slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
+  --grid-mod <span class="st">"col=sine:rate=4,depth=0.5"</span> <span class="kw">\</span>   <span class="cm"># fast columns</span>
+  --grid-mod <span class="st">"row=sine:rate=1,depth=0.5"</span> <span class="kw">\</span>   <span class="cm"># slow rows</span>
+  --max-delay <span class="st">400</span> --fill wrap</pre></div>
+
+  <div class="grid-3">
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-crossrate.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">cross rates · col 4 / row 1</div>
+        <p class="card-caption">Columns ripple fast against a slow row gradient — vertical bands of staggered time drifting top to bottom.</p>
+        <div class="card-cmd">--grid 24x24 --grid-mod "col=sine:rate=4,depth=0.5" --grid-mod "row=sine:rate=1,depth=0.5"</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-mixed.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">mixed waveforms · sine × triangle</div>
+        <p class="card-caption">A soft sine on the columns crossed with a hard triangle on the rows: rounded horizontal flow, angular vertical steps.</p>
+        <div class="card-cmd">--grid-mod "col=sine:rate=3,depth=0.5" --grid-mod "row=triangle:rate=3,depth=0.5"</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-phase.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">phase offset · row +0.25</div>
+        <p class="card-caption">Equal sines with a quarter-cycle offset on one axis — the interference peaks shift onto the diagonal.</p>
+        <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.5" --grid-mod "row=sine:rate=2,phase=0.25,depth=0.5"</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-checker.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">fine checker · rate 6 both · 32×32</div>
+        <p class="card-caption">High rate on a dense grid shatters the figure into a confetti of small tiles, each frozen at its own moment.</p>
+        <div class="card-cmd">--grid 32x32 --grid-mod "col=sine:rate=6,depth=0.5" --grid-mod "row=sine:rate=6,depth=0.5" --max-delay 300</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-weighted.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">depth-weighted · col 0.8 / row 0.2</div>
+        <p class="card-caption">An unequal mix: the column oscillator dominates while the row adds a faint cross-ripple — directional, not symmetric.</p>
+        <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.8" --grid-mod "row=sine:rate=3,depth=0.2"</div>
+      </div>
+    </div>
+    <div class="card">
+      <video preload="none" data-src="2020-grid-dual-overdrive.mp4" autoplay muted loop playsinline></video>
+      <div class="card-body">
+        <div class="card-tag">overdrive · depth 1 both · max-delay 600</div>
+        <p class="card-caption">Both axes at full depth: the summed field clamps into broad temporal plateaus separated by sharp walls — blocky, stepped time.</p>
+        <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=1" --grid-mod "row=sine:rate=2,depth=1" --max-delay 600</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Implementation:</strong> grid mode reuses the same source-frame formula, fill
+    modes (<code>wrap</code> keeps every tile on real footage), and oscillator catalog as
+    the 1D engine — it only generalizes the gather from bands to tiles. Dual modulation is
+    just two <code>--grid-mod</code> entries whose per-cell contributions sum, exactly as
+    multiple <code>--mod</code> entries sum in 1D. Cells need random access to any frame, so
+    grid mode always uses the full in-memory buffer.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     § 9  COLLAPSE / PHOTOFINISH
 ═══════════════════════════════════════════ -->
 <section class="section" id="collapse">
   <div class="sec-hd">
-    <div class="sec-num">§ 08</div>
+    <div class="sec-num">§ 09</div>
     <h2>Collapse — strip photography</h2>
     <p class="sec-lead">
       The <code>collapse</code> command accumulates a single slit's history
@@ -1222,11 +1445,11 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
 </section>
 
 <!-- ═══════════════════════════════════════════
-     § 9  GIF
+     § 10  GIF
 ═══════════════════════════════════════════ -->
 <section class="section" id="gif">
   <div class="sec-hd">
-    <div class="sec-num">§ 09</div>
+    <div class="sec-num">§ 10</div>
     <h2>Animated GIF output</h2>
     <p class="sec-lead">
       Pass a <code>.gif</code> extension and the encoder switches to Pillow's
@@ -1276,11 +1499,11 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
 </section>
 
 <!-- ═══════════════════════════════════════════
-     § 10  TRUMBULL / FIXED-SLIT
+     § 11  TRUMBULL / FIXED-SLIT
 ═══════════════════════════════════════════ -->
 <section class="section" id="trumbull">
   <div class="sec-hd">
-    <div class="sec-num">§ 10</div>
+    <div class="sec-num">§ 11</div>
     <h2>Trumbull — fixed-slit gather</h2>
     <p class="sec-lead">
       In standard slit-scan, each output column is gathered from its own column

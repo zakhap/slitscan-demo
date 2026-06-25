@@ -22,6 +22,7 @@ Each section of the site demonstrates one technique independently, with the CLI 
 | Slice width | `--slice-width 1` smooth gradient vs wider banded mode |
 | Fill & looping | `--fill black` vs `--fill wrap` for seamless infinite loops |
 | Modulation | LFO oscillators on `vanguard`, `max_delay`, or both simultaneously |
+| Grid | `--grid COLSxROWS` — 2D mosaic where each tile is frozen at a different time (profile or spatial-LFO delay field) |
 | Collapse | `slitscan collapse` — strip photography / photofinish images |
 | GIF | `.gif` output with palette quantization and dithering |
 | Trumbull | `--slit-source` fixed-slit gather (2001: A Space Odyssey effect) |
