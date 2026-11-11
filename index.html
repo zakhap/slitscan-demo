@@ -3,489 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>slitscan — time-displacement video rendering</title>
+  <title>slitscan · time-displacement video</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
+    /* Tokens from microrhythmica (components.html): warm greys, one ink, 1px rules, square corners,
+       caps only for section names, sentence case everywhere else. */
     :root {
-      --bg:         #090909;
-      --surface:    #101010;
-      --surface-2:  #161412;
-      --border:     rgba(255,255,255,0.07);
-      --border-2:   rgba(255,255,255,0.04);
-      --text:       #d8d4cc;
-      --muted:      #524e4a;
-      --dim:        #847e78;
-      --accent:     #c8a86a;
-      --accent-bg:  rgba(200,168,106,0.10);
-      --code-bg:    #121008;
-      --code-text:  #9cc4e4;
-      --code-str:   #a4c88c;
-      --mono:       'Menlo','Monaco','Courier New',monospace;
-      --sans:       system-ui,-apple-system,sans-serif;
-      --max:        1160px;
-      --gap:        3px;
+      --bg:#131312; --body:#191918; --panel:#1d1d1c; --panel2:#242423; --well:#161615; --box:#141413;
+      --rule:#2a2a28; --rule2:#383835; --rule3:#4a4a46;
+      --ink:#ecebe6; --ink2:#bab9b3; --dim:#7a7974; --faint:#4b4a46;
+      --v3:#ded5c4; --v4:#bcc2c7;
+      --sans:"Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+      --cap:500 9.5px/1 var(--sans);
+      --max:1160px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font: 300 15px/1.7 var(--sans); -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--ink); color: var(--bg); }
+    a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule2); }
+    a:hover { border-bottom-color: var(--ink2); }
+    :focus { outline: none; }
+    :focus-visible { outline: 1px solid var(--ink); outline-offset: 1px; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 15px;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Nav ────────────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(9,9,9,0.90);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-inner {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      height: 50px;
-      gap: 0;
-    }
-
-    .nav-brand {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: 0.03em;
-      margin-right: 36px;
-      flex-shrink: 0;
-    }
-
-    .nav-links {
-      display: flex;
-      list-style: none;
-      overflow-x: auto;
-      scrollbar-width: none;
-      gap: 0;
-    }
+    /* ── Nav: the header bar ─────────────────────── */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--body); border-bottom: 1px solid var(--rule); }
+    .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 28px; display: flex; align-items: center; height: 48px; }
+    .nav-brand { font: 500 13px/1 var(--sans); color: var(--ink); border: 0; margin-right: 32px; flex-shrink: 0; }
+    .nav-links { display: flex; list-style: none; overflow-x: auto; scrollbar-width: none; align-self: stretch; }
     .nav-links::-webkit-scrollbar { display: none; }
-
-    .nav-links a {
-      display: block;
-      padding: 0 13px;
-      height: 50px;
-      line-height: 50px;
-      font-size: 11px;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      white-space: nowrap;
-      transition: color 0.15s;
-    }
-    .nav-links a:hover { color: var(--dim); }
-
-    .nav-github {
-      margin-left: auto;
-      flex-shrink: 0;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      text-decoration: none;
-      letter-spacing: 0.04em;
-      padding: 0 0 0 24px;
-      white-space: nowrap;
-      transition: color 0.15s;
-    }
-    .nav-github:hover { color: var(--accent); }
+    .nav-links a { display: flex; align-items: center; height: 100%; padding: 0 10px; border: 0; font: 400 12px var(--sans); color: var(--dim); white-space: nowrap; box-shadow: inset 0 -1px 0 transparent; }
+    .nav-links a:hover { color: var(--ink2); }
+    .nav-links a.on { color: var(--ink); box-shadow: inset 0 -1px 0 var(--ink); }
+    .nav-github { margin-left: auto; flex-shrink: 0; height: 22px; padding: 0 10px; display: inline-grid; place-items: center; background: var(--panel2); border: 1px solid var(--rule3); color: var(--ink2); font: 400 11px var(--sans); white-space: nowrap; }
+    .nav-github:hover { color: var(--ink); border-color: var(--dim); }
 
     /* ── Hero ───────────────────────────────────── */
-    .hero {
-      padding: 96px 32px 72px;
-      max-width: var(--max);
-      margin: 0 auto;
-      border-bottom: 1px solid var(--border);
-    }
+    .hero { padding: 88px 28px 64px; max-width: var(--max); margin: 0 auto; }
+    .hero h1 { font: 300 clamp(30px, 5vw, 56px)/1.08 var(--sans); letter-spacing: -.02em; color: var(--ink); margin-bottom: 26px; }
+    .hero-body { font-size: 17px; color: var(--ink2); max-width: 640px; margin-bottom: 48px; }
 
-    .eyebrow {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 24px;
-    }
-
-    .hero h1 {
-      font-size: clamp(28px, 5vw, 58px);
-      font-weight: 300;
-      letter-spacing: -0.025em;
-      line-height: 1.08;
-      color: #ede8e0;
-      margin-bottom: 28px;
-    }
-
-    .hero h1 em { font-style: normal; color: var(--accent); }
-
-    .hero-body {
-      font-size: 16px;
-      color: var(--dim);
-      line-height: 1.75;
-      max-width: 660px;
-      margin-bottom: 52px;
-    }
-
-    .hero-commands {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      border: 1px solid var(--border);
-    }
-
-    .hero-cmd-row {
-      display: grid;
-      grid-template-columns: 110px 1fr;
-      grid-template-rows: auto auto;
-      gap: 0 20px;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      align-items: baseline;
-    }
-
-    .hero-cmd-row:last-child { border-bottom: none; }
-
-    .hero-cmd-label {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--accent);
-      padding-top: 2px;
-      grid-row: 1;
-    }
-
-    .hero-cmd-code {
-      font-family: var(--mono);
-      font-size: 12.5px;
-      color: var(--code-text);
-      background: none;
-      padding: 0;
-      grid-column: 2;
-      grid-row: 1;
-      word-break: break-all;
-    }
-
-    .hero-cmd-note {
-      font-size: 12px;
-      color: var(--muted);
-      grid-column: 2;
-      grid-row: 2;
-      margin-top: 4px;
-    }
-
+    .hero-commands { display: grid; gap: 1px; background: var(--rule2); border: 1px solid var(--rule2); }
+    .hero-cmd-row { display: grid; grid-template-columns: 120px 1fr; gap: 4px 20px; padding: 12px 16px; background: var(--panel); align-items: baseline; }
+    .hero-cmd-label { font: 400 12.5px var(--sans); color: var(--dim); }
+    .hero-cmd-code { font: 400 12.5px/1.5 var(--mono); color: var(--ink); background: none; border: 0; padding: 0; grid-column: 2; word-break: break-all; }
+    .hero-cmd-note { font-size: 13px; line-height: 1.6; color: var(--dim); grid-column: 2; max-width: 680px; }
+    .hero-cmd-note code { font-size: 12px; color: var(--ink2); }
     @media (max-width: 640px) {
       .hero-cmd-row { grid-template-columns: 1fr; }
       .hero-cmd-code, .hero-cmd-note { grid-column: 1; }
-      .hero-cmd-note { grid-row: 3; }
     }
-
-    .hero-repo-link {
-      display: inline-block;
-      margin-top: 20px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: 0.03em;
-      opacity: 0.75;
-      transition: opacity 0.15s;
-    }
-    .hero-repo-link:hover { opacity: 1; }
+    .hero-repo-link { display: inline-block; margin-top: 18px; font-size: 14px; color: var(--ink2); }
 
     /* ── Sections ───────────────────────────────── */
-    .section {
-      padding: 72px 32px;
-      max-width: var(--max);
-      margin: 0 auto;
-      border-bottom: 1px solid var(--border);
-    }
+    .section { width: min(calc(var(--max) - 56px), calc(100% - 56px)); border-top: 1px solid var(--rule); padding: 56px 0; margin: 0 auto; }
+    .sec-hd { margin-bottom: 36px; }
+    .section h2 { font: 300 clamp(22px, 2.8vw, 32px)/1.2 var(--sans); letter-spacing: -.01em; color: var(--ink); margin-bottom: 14px; }
+    .section h2 code { font-size: .7em; }
+    .sec-lead { font-size: 16px; color: var(--ink2); max-width: 700px; }
+    .sec-lead + .sec-lead { margin-top: 14px; }
 
-    .sec-hd { margin-bottom: 44px; }
-
-    .sec-num {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .section h2 {
-      font-size: clamp(20px, 2.8vw, 34px);
-      font-weight: 300;
-      letter-spacing: -0.015em;
-      color: #ede8e0;
-      margin-bottom: 14px;
-    }
-
-    .sec-lead {
-      font-size: 15px;
-      color: var(--dim);
-      line-height: 1.75;
-      max-width: 700px;
-    }
-
-    p { font-size: 15px; color: var(--dim); line-height: 1.75; max-width: 700px; margin-bottom: 12px; }
+    p { color: var(--ink2); max-width: 700px; margin-bottom: 14px; }
     p:last-child { margin-bottom: 0; }
-    strong { color: var(--text); font-weight: 500; }
+    strong { color: var(--ink); font-weight: 400; }
+    em { font-style: normal; color: var(--ink); }
 
-    h3 {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 40px 0 14px;
-    }
+    h3 { font: 400 17px/1.3 var(--sans); color: var(--ink); margin: 44px 0 12px; }
 
-    /* ── Formula / Diagram / Code ───────────────── */
-    .formula {
-      background: var(--surface-2);
-      border-left: 2px solid var(--accent);
-      padding: 18px 22px;
-      margin: 28px 0;
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.9;
-      color: var(--text);
-      overflow-x: auto;
-    }
+    /* ── Formula / Diagram / Code: dark wells ─── */
+    .formula, .diagram, .code-block { background: var(--well); border: 1px solid var(--rule); padding: 16px 18px; margin: 24px 0; overflow-x: auto; }
+    .formula { font: 400 13px/1.9 var(--mono); color: var(--ink); white-space: pre; }
+    .formula .label, .diagram .label { display: block; font: 400 12px var(--sans); color: var(--dim); margin-bottom: 10px; white-space: normal; }
+    .formula .cm, .code-block .cm { color: var(--faint); }
+    .formula .hl { color: var(--v3); }
+    .diagram pre { font: 400 11px/1.65 var(--mono); color: var(--dim); white-space: pre; }
+    .code-block pre { font: 400 12px/1.8 var(--mono); color: var(--ink2); white-space: pre; }
+    .code-block .kw { color: var(--ink); }
+    .code-block .st { color: var(--v3); }
+    .code-block .op { color: var(--v4); }
 
-    .formula .label {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
+    code { font: 400 .87em var(--mono); color: var(--ink); }
 
-    .formula .cm { color: var(--muted); }
-    .formula .hl { color: var(--accent); }
 
-    .diagram {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      padding: 22px 24px;
-      margin: 24px 0;
-      overflow-x: auto;
-    }
+    /* ── Grids: cards share 1px rules ──────────── */
+    .grid-1, .grid-2, .grid-3, .grid-4, .grid-auto, .fill-compare { display: grid; gap: 1px; background: var(--rule2); border: 1px solid var(--rule2); margin: 36px 0; }
+    .grid-1 { grid-template-columns: 1fr; }
+    .grid-2, .fill-compare { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .grid-auto { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    @media (max-width: 960px) { .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 720px) { .grid-2, .grid-3, .grid-4, .fill-compare { grid-template-columns: 1fr; } }
 
-    .diagram pre {
-      font-family: var(--mono);
-      font-size: 11px;
-      line-height: 1.65;
-      color: var(--dim);
-      white-space: pre;
-    }
-
-    .code-block {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      padding: 18px 22px;
-      margin: 24px 0;
-      overflow-x: auto;
-    }
-
-    .code-block pre {
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.8;
-      color: var(--text);
-      white-space: pre;
-    }
-
-    .code-block .cm { color: var(--muted); }
-    .code-block .kw { color: var(--accent); }
-    .code-block .st { color: var(--code-str); }
-    .code-block .op { color: var(--code-text); }
-
-    code {
-      font-family: var(--mono);
-      font-size: 0.87em;
-      color: var(--code-text);
-      background: var(--code-bg);
-      padding: 1px 5px;
-    }
-
-    .callout {
-      background: var(--accent-bg);
-      border: 1px solid rgba(200,168,106,0.18);
-      padding: 16px 20px;
-      margin: 24px 0;
-      font-size: 14px;
-      color: var(--dim);
-      line-height: 1.65;
-    }
-
-    .callout strong { color: var(--accent); }
-
-    /* ── Grids ──────────────────────────────────── */
-    .grid-1 { display: grid; grid-template-columns: 1fr;             gap: var(--gap); margin: 44px 0; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2,1fr);   gap: var(--gap); margin: 44px 0; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr);   gap: var(--gap); margin: 44px 0; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr);   gap: var(--gap); margin: 44px 0; }
-    .grid-auto { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: var(--gap); margin: 44px 0; }
-
-    @media (max-width: 960px) { .grid-3 { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 720px) {
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    }
-
-    /* ── Media Cards ─────────────────────────────── */
-    .card {
-      background: var(--surface);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card video,
-    .card img {
-      width: 100%;
-      display: block;
-      background: #000;
-    }
-
-    .card video { aspect-ratio: 16/9; object-fit: cover; }
-
-    .card-img-sq img  { aspect-ratio: 1/1; object-fit: cover; }   /* collapse x-axis ≈ square */
-    .card-img-land img { aspect-ratio: 4/3; object-fit: cover; }  /* collapse y-axis */
-
-    .card-body {
-      padding: 13px 15px 15px;
-      border-top: 1px solid var(--border-2);
-      flex: 1;
-    }
-
-    .card-tag {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
-
-    .card-caption {
-      font-size: 13px;
-      color: var(--dim);
-      line-height: 1.5;
-      margin-bottom: 0;
-    }
-
-    .card-cmd {
-      margin-top: 9px;
-      font-family: var(--mono);
-      font-size: 10.5px;
-      color: var(--code-text);
-      background: var(--code-bg);
-      padding: 7px 9px;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-
-    /* GIF cards — let natural height show */
-    .gif-card { background: var(--surface); overflow: hidden; }
-    .gif-card img,
-    .gif-card video { width: 100%; display: block; background: #000; aspect-ratio: 16/9; object-fit: cover; }
-    .gif-card .card-body { padding: 13px 15px 15px; border-top: 1px solid var(--border-2); }
-
-    /* ── Fill compare — stack within a card ─────── */
-    .fill-compare {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--gap);
-      margin: 44px 0;
-    }
-
-    .fill-compare .card video { aspect-ratio: 16/9; }
-
-    @media (max-width: 680px) { .fill-compare { grid-template-columns: 1fr; } }
+    /* ── Media cards: device panels ───────────── */
+    .card, .gif-card { background: var(--panel); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+    .card video, .card img, .gif-card img, .gif-card video { width: 100%; display: block; background: #000; }
+    .card video, .gif-card img, .gif-card video { aspect-ratio: 16/9; object-fit: cover; cursor: pointer; }
+    .card-img-sq img { aspect-ratio: 1/1; object-fit: cover; }
+    .card-img-land img { aspect-ratio: 4/3; object-fit: cover; }
+    .card-body, .gif-card .card-body { padding: 10px 12px 12px; border-top: 1px solid var(--rule2); flex: 1; display: flex; flex-direction: column; }
+    .card-tag { font: 400 13px/1.35 var(--sans); color: var(--ink); margin-bottom: 6px; }
+    .card-caption { font-size: 13px; line-height: 1.55; color: var(--dim); margin-bottom: 0; flex: 1; }
+    .card-cmd { margin-top: 10px; font: 400 10.5px/16px var(--mono); color: var(--ink2); background: var(--box); border: 1px solid var(--rule2); padding: 2px 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .card-cmd::-webkit-scrollbar { display: none; }
+    .card:hover .card-cmd { border-color: var(--rule3); color: var(--ink); }
 
     /* ── Table ──────────────────────────────────── */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin: 24px 0;
-    }
-    .data-table th {
-      text-align: left;
-      padding: 8px 14px;
-      background: var(--surface-2);
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-    .data-table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border-2);
-      color: var(--dim);
-      vertical-align: top;
-    }
-    .data-table td:first-child {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--code-text);
-      white-space: nowrap;
-    }
-    .data-table td strong { color: var(--text); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 24px 0; border: 1px solid var(--rule2); }
+    .data-table th { text-align: left; padding: 9px 12px; background: var(--panel2); font: 400 12px var(--sans); color: var(--dim); border-bottom: 1px solid var(--rule2); }
+    .data-table td { padding: 10px 12px; background: var(--panel); border-bottom: 1px solid var(--rule); color: var(--ink2); vertical-align: top; line-height: 1.55; }
+    .data-table tr:last-child td { border-bottom: 0; }
+    .data-table td:first-child { font: 400 11.5px var(--mono); color: var(--ink); white-space: nowrap; }
+    .data-table td strong { color: var(--ink); }
 
     /* ── Footer ─────────────────────────────────── */
-    footer {
-      padding: 56px 32px;
-      max-width: var(--max);
-      margin: 0 auto;
+    footer { width: min(calc(var(--max) - 56px), calc(100% - 56px)); margin: 0 auto; padding: 40px 0 80px; border-top: 1px solid var(--rule); }
+    footer p { font-size: 13.5px; color: var(--dim); }
+
+    @media (max-width: 720px) {
+      .nav-inner, .hero { padding-left: 16px; padding-right: 16px; }
+      .section, footer { width: calc(100% - 32px); }
+      .nav-brand { margin-right: 16px; }
+      .hero { padding-top: 56px; }
     }
 
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 32px;
-    }
-
-    .footer-left {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 2.2;
-    }
-
-    .footer-left a { color: var(--dim); text-decoration: none; }
-    .footer-left a:hover { color: var(--accent); }
-
-    .footer-right {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 2.2;
-      text-align: right;
-    }
-
-    /* ── Misc ───────────────────────────────────── */
     .mt { margin-top: 32px; }
     .mt-sm { margin-top: 16px; }
     .spacer { height: 28px; }
@@ -503,12 +148,12 @@
       <li><a href="#axis">Axis</a></li>
       <li><a href="#delay">Delay</a></li>
       <li><a href="#bands">Bands</a></li>
-      <li><a href="#fill">Fill &amp; Loop</a></li>
+      <li><a href="#fill">Fill</a></li>
       <li><a href="#modulation">Modulation</a></li>
       <li><a href="#grid">Grid</a></li>
       <li><a href="#collapse">Collapse</a></li>
       <li><a href="#gif">GIF</a></li>
-      <li><a href="#trumbull">Trumbull</a></li>
+      <li><a href="#trumbull">Fixed slit</a></li>
     </ul>
     <a class="nav-github" href="https://github.com/zakhap/slitscan-cli">↗ github</a>
   </div>
@@ -517,27 +162,24 @@
 <!-- ───────────────────────────── HERO ── -->
 <div id="top">
 <div class="hero">
-  <div class="eyebrow">CLI toolkit · Python · PyAV · NumPy</div>
-  <h1>Time-displacement<br><em>slit-scan</em> rendering</h1>
+  <h1>slitscan</h1>
   <p class="hero-body">
-    A video is not a stack of images. It is an <strong>X-Y-T spacetime volume</strong>.
-    Slitscan cuts surfaces through that volume — each spatial column of the output
-    is sourced from a different moment in time, warping footage into shapes that
-    no single frame can contain.
+    slitscan is a command-line tool for editing time in videos. It collects
+    historic slit-scan techniques into a single toolkit. In a stroke of
+    inspiration, I had the idea that every variable could also be mapped to
+    an LFO, like on a modular synthesizer.
   </p>
   <div class="hero-commands">
     <div class="hero-cmd-row">
-      <span class="hero-cmd-label">sweep mode</span>
+      <span class="hero-cmd-label">render</span>
       <code class="hero-cmd-code">slitscan render input.mp4 output.mp4 --profile ramp --fill wrap</code>
-      <span class="hero-cmd-note">video → video with per-column time displacement</span>
     </div>
     <div class="hero-cmd-row">
-      <span class="hero-cmd-label">collapse mode</span>
+      <span class="hero-cmd-label">collapse</span>
       <code class="hero-cmd-code">slitscan collapse input.mp4 photofinish.png --slit-position 0.5</code>
-      <span class="hero-cmd-note">video → single image, slit history accumulated over time</span>
     </div>
   </div>
-  <a class="hero-repo-link" href="https://github.com/zakhap/slitscan-cli">↗ github.com/zakhap/slitscan-cli</a>
+  <a class="hero-repo-link" href="https://github.com/zakhap/slitscan-cli">Source and install instructions on GitHub</a>
 </div>
 </div>
 
@@ -546,36 +188,36 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="concept">
   <div class="sec-hd">
-    <div class="sec-num">§ 01</div>
-    <h2>The XYT spacetime model</h2>
+    <h2>How it works</h2>
     <p class="sec-lead">
-      A normal video reads the X-Y plane at each time step T, showing
-      every pixel from the same moment. Slit-scan breaks that synchrony.
-      The engine maps each spatial column to a <em>different</em> T-slice,
-      assembling a single output frame from many different moments.
+      Picture a video as a solid block. Width is X, height is Y, and the frames
+      stack up behind each other along a third axis, time. Normal playback cuts
+      the block straight across, one flat slice per frame, so every pixel in the
+      slice is from the same moment.
+    </p>
+    <p class="sec-lead">
+      slitscan cuts the block at an angle or along a curve. Each column of the
+      output comes from a different depth in time. The profile sets the shape
+      of the cut, and the cut moves forward one frame for each output frame.
     </p>
   </div>
 
   <p>
-    The core operation reduces to one function evaluated once per output frame:
+    The whole engine is one function, evaluated for each output frame:
   </p>
 
-  <div class="formula">
-    <div class="label">Canonical source-frame formula</div>
-<span class="hl">source_frame(x, output_t)</span>  =  <span class="hl">output_t  −  delay[x]</span>
+  <div class="formula"><div class="label">Source frame</div><span class="hl">source_frame(x, output_t)</span>  =  <span class="hl">output_t  −  delay[x]</span>
 
-<span class="cm">  x         — spatial band index (0 … width-1)</span>
-<span class="cm">  output_t  — current output frame</span>
-<span class="cm">  delay[x]  — frames behind the vanguard for band x (always ≥ 0)</span>
-<span class="cm">  vanguard  — the band with delay=0; reads the most current input frame</span>
-  </div>
+<span class="cm">  x         band index (0 … width-1)</span>
+<span class="cm">  output_t  current output frame</span>
+<span class="cm">  delay[x]  frames behind the vanguard for band x (always ≥ 0)</span>
+<span class="cm">  vanguard  the band with delay=0, reading the newest input frame</span></div>
 
   <p>
-    The <strong>vanguard</strong> edge (delay = 0) tracks the present.
-    The <strong>lagging</strong> edge (delay = max_delay) looks furthest into the past.
-    As the clip plays, this temporal rake sweeps through the footage — reading
-    across a single output frame from left to right is equivalent to reading
-    <em>backward through time</em>.
+    The <strong>vanguard</strong> edge (delay 0) shows the present.
+    The <strong>lagging</strong> edge (delay = max_delay) shows the oldest frame.
+    Read one output frame from left to right and you are reading
+    <em>backward through the clip</em>.
   </p>
 
   <div class="diagram">
@@ -593,10 +235,9 @@
     </pre>
   </div>
 
-  <h3>Architecture</h3>
+  <h3>Pipeline</h3>
   <p>
-    The pipeline is fully layered — each stage is independently testable and
-    can be swapped without touching the others.
+    Five stages. Each one is tested on its own.
   </p>
 
   <div class="diagram">
@@ -608,11 +249,11 @@
     </pre>
   </div>
 
-  <div class="callout">
-    <strong>Key invariant:</strong> profiles and oscillators are pure functions.
-    Static renders, animated sweeps, and LFO-modulated surfaces all run through
-    identical code — the render engine cannot distinguish them.
-  </div>
+  <h3>Pure functions</h3>
+  <p>
+    Profiles and oscillators are pure functions. A static render, an animated sweep and an LFO-modulated surface all go
+    through the same render code. The engine can't tell them apart.
+  </p>
 </section>
 
 <!-- ═══════════════════════════════════════════
@@ -620,12 +261,11 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="profiles">
   <div class="sec-hd">
-    <div class="sec-num">§ 02</div>
-    <h2>Delay profiles</h2>
+    <h2>Profiles</h2>
     <p class="sec-lead">
       A profile is a pure function <code>delay_map(x_coords, output_t, params) → ndarray</code>
-      that maps each band's position to a delay value. Three profiles ship with v1.
-      The vanguard position (0.0–1.0) controls which end of the frame leads in time.
+      that gives each band a delay. Version 1 has three.
+      The vanguard position (0.0 to 1.0) sets which part of the frame shows the present.
     </p>
   </div>
 
@@ -638,18 +278,18 @@
     <tbody>
       <tr>
         <td>ramp</td>
-        <td>Linearly increases from vanguard to opposite edge</td>
-        <td><strong>Classic temporal rake.</strong> One edge leads, one lags. Reading across the frame = reading through time.</td>
+        <td>Rises in a straight line from the vanguard to the far edge</td>
+        <td><strong>The classic rake.</strong> One edge leads, the other lags.</td>
       </tr>
       <tr>
         <td>tent</td>
         <td>Delay peaks at center, falls to zero at both edges</td>
-        <td><strong>Temporal fold.</strong> Both edges are "now"; the center is furthest in the past. Creates symmetrical distortion.</td>
+        <td><strong>A fold.</strong> Both edges show now and the center shows the oldest frame, so the image is mirrored in time.</td>
       </tr>
       <tr>
         <td>reverse</td>
         <td>Mirror of ramp (vanguard on opposite side)</td>
-        <td><strong>Inverted rake.</strong> Right edge leads. Useful for comparing temporal direction or for paired motion studies.</td>
+        <td><strong>The rake, flipped.</strong> The right edge leads. Handy for comparing direction side by side.</td>
       </tr>
     </tbody>
   </table>
@@ -659,7 +299,7 @@
       <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">ramp · default</div>
-        <p class="card-caption">Left edge reads frame t, right edge reads t − 1279. The dancer's motion is sheared diagonally across time.</p>
+        <p class="card-caption">Left edge reads frame t, right edge reads t − 1279. The dancer shears into a diagonal.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4</div>
       </div>
     </div>
@@ -667,7 +307,7 @@
       <video preload="none" data-src="2020-slitscan-tent.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">tent</div>
-        <p class="card-caption">Both edges read the present; the center looks furthest back. Produces a bilateral temporal mirror.</p>
+        <p class="card-caption">Both edges read the present and the center reads furthest back. Left and right mirror each other.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --profile tent</div>
       </div>
     </div>
@@ -675,7 +315,7 @@
       <video preload="none" data-src="2020-reverse-150.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">reverse · max-delay 150</div>
-        <p class="card-caption">Inverted ramp with a reduced spread of 150 frames — the right edge now leads. Delay range compressed for comparison.</p>
+        <p class="card-caption">The ramp flipped, with a spread of only 150 frames. The right edge leads.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --profile reverse --max-delay 150</div>
       </div>
     </div>
@@ -687,13 +327,11 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="axis">
   <div class="sec-hd">
-    <div class="sec-num">§ 03</div>
-    <h2>Scan axis</h2>
+    <h2>Axis</h2>
     <p class="sec-lead">
-      The default axis is <code>x</code> — bands are vertical slices (columns),
-      delay varies left-to-right. Switching to <code>--axis y</code> makes bands
-      horizontal slices (rows), delay varying top-to-bottom. Same formula,
-      rotated 90°.
+      On the default axis, <code>x</code>, bands are columns and delay changes
+      from left to right. <code>--axis y</code> makes bands rows, with delay
+      changing from top to bottom. The formula is the same, turned 90°.
     </p>
   </div>
 
@@ -702,7 +340,7 @@
       <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis x (default)</div>
-        <p class="card-caption">Vertical column bands. Horizontal motion shears the figure temporally across the frame width.</p>
+        <p class="card-caption">Column bands. Sideways motion shears the figure across the width.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --axis x</div>
       </div>
     </div>
@@ -710,7 +348,7 @@
       <video preload="none" data-src="2020-axis-y-ramp.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · ramp</div>
-        <p class="card-caption">Horizontal row bands. Vertical motion — like the dancer's arms and legs — is sheared temporally top-to-bottom.</p>
+        <p class="card-caption">Row bands. Up-and-down motion, like the dancer's arms and legs, shears from top to bottom.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --axis y</div>
       </div>
     </div>
@@ -721,7 +359,7 @@
       <video preload="none" data-src="2020-axis-y-tent.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · tent</div>
-        <p class="card-caption">Tent profile on the y-axis. Top and bottom rows are "now"; the horizontal mid-band looks furthest back.</p>
+        <p class="card-caption">Tent on the y axis. The top and bottom rows show now, and the middle rows show the oldest frames.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --axis y --profile tent</div>
       </div>
     </div>
@@ -729,7 +367,7 @@
       <video preload="none" data-src="2020-axis-y-tent-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · tent · wrap</div>
-        <p class="card-caption">Same as above with <code>--fill wrap</code>, eliminating the black fill zones at clip boundaries for seamless looping.</p>
+        <p class="card-caption">The same with <code>--fill wrap</code>. The black zones at the clip boundaries are gone and it loops cleanly.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --axis y --profile tent --fill wrap</div>
       </div>
     </div>
@@ -741,21 +379,18 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="delay">
   <div class="sec-hd">
-    <div class="sec-num">§ 04</div>
-    <h2>Temporal spread — <code>--max-delay</code></h2>
+    <h2>Max delay</h2>
     <p class="sec-lead">
       <code>--max-delay N</code> sets how many frames separate the vanguard and lagging
-      edges. The default is <code>extent − 1</code> (full width or height in pixels).
-      Smaller values compress the temporal window; larger values stretch it across
-      more of the clip's history.
+      edges. The default is <code>extent − 1</code>, the full width or height in pixels.
+      Lower it to squeeze the window. Raise it to reach further back.
     </p>
   </div>
 
   <p>
-    With the 30fps source at 1280px wide, the default max-delay of 1279 frames
-    spans ~42.6 seconds of footage in a single output frame. Reducing to 300
-    frames (10s) concentrates the distortion; the dancer's body remains more
-    coherent while subtle temporal seams appear at phase transitions.
+    This source is 1280px wide at 30fps, so the default of 1279 frames puts
+    42.6 seconds of footage in one output frame. At 300 frames (10s) the
+    dancer stays mostly in one piece, with small seams where the motion changes.
   </p>
 
   <div class="grid-3">
@@ -763,7 +398,7 @@
       <video preload="none" data-src="2020-ramp-300.mp4"         autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 300 frames (~10s)</div>
-        <p class="card-caption">Tight temporal window. The figure is recognisable; distortion is subtle shearing.</p>
+        <p class="card-caption">A short window. You can still make out the figure, slightly sheared.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --max-delay 300</div>
       </div>
     </div>
@@ -771,7 +406,7 @@
       <video preload="none" data-src="2020-ramp-900.mp4"         autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 900 frames (~30s)</div>
-        <p class="card-caption">Wide spread. The trailing edge is 30 seconds behind the leading edge within a single output frame.</p>
+        <p class="card-caption">The trailing edge is 30 seconds behind the leading edge.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --max-delay 900</div>
       </div>
     </div>
@@ -779,7 +414,7 @@
       <video preload="none" data-src="2020-slitscan-ramp.mp4"    autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">max-delay 1279 (full extent, default)</div>
-        <p class="card-caption">Every pixel column references a unique frame. The full 992-frame clip is visible in a single output frame as a temporal panorama.</p>
+        <p class="card-caption">Every column reads a different frame. All 992 frames of the clip fit in one output frame.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4</div>
       </div>
     </div>
@@ -815,20 +450,18 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="bands">
   <div class="sec-hd">
-    <div class="sec-num">§ 05</div>
-    <h2>Slice width — <code>--slice-width</code></h2>
+    <h2>Slice width</h2>
     <p class="sec-lead">
-      By default each band is 1 pixel wide, producing a smooth temporal gradient.
-      Increasing <code>--slice-width</code> groups pixels into wider bands that share
-      a single source frame, making the discrete temporal structure explicit.
+      Each band is 1 pixel wide by default, which gives a smooth gradient.
+      A larger <code>--slice-width</code> groups columns into wider bands that
+      share one source frame, so you can see the steps.
     </p>
   </div>
 
   <p>
-    Wide bands reveal the underlying mechanism: each block is a vertical strip
-    taken from a specific frame, placed side by side. At <code>--slice-width 1</code>
-    these strips are individual pixel columns and the seams disappear; at wider
-    values they become visible as a temporal mosaic.
+    Wide bands show how the effect works. Each block is a strip cut from one
+    frame and set next to strips from other frames. At <code>--slice-width 1</code>
+    each strip is a single column and the seams vanish.
   </p>
 
   <div class="grid-2">
@@ -836,7 +469,7 @@
       <video preload="none" data-src="2020-slitscan-ramp.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 1 (default)</div>
-        <p class="card-caption">Smooth temporal gradient — 1280 individual column sources, each a unique frame.</p>
+        <p class="card-caption">1280 columns, each from its own frame.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4</div>
       </div>
     </div>
@@ -844,7 +477,7 @@
       <video preload="none" data-src="2020-banded.mp4"           autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 40</div>
-        <p class="card-caption">32 wide bands of 40px each. The seams between temporal blocks become legible. Each block shows the same column of pixels from its assigned frame.</p>
+        <p class="card-caption">32 bands of 40px. You can see the seams, and each band shows its own frame.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --slice-width 40</div>
       </div>
     </div>
@@ -855,7 +488,7 @@
       <video preload="none" data-src="2020-banded-wrap.mp4"      autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">slice-width 40 · wrap</div>
-        <p class="card-caption">Banded with fill=wrap. The clip loops seamlessly at band boundaries, allowing infinite playback as an installation.</p>
+        <p class="card-caption">Bands with wrap fill. Loops without a cut.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --slice-width 40 --fill wrap</div>
       </div>
     </div>
@@ -874,13 +507,12 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="fill">
   <div class="sec-hd">
-    <div class="sec-num">§ 06</div>
-    <h2>Fill modes &amp; seamless looping</h2>
+    <h2>Fill modes and looping</h2>
     <p class="sec-lead">
-      When a band references a frame before index 0 or after the last frame,
-      the fill mode determines what appears. Five modes: <code>black</code>,
-      <code>white</code>, <code>transparent</code>, <code>hold</code>, and <code>wrap</code>.
-      Wrap is the key to seamless infinite loops.
+      When a band asks for a frame before the first or after the last,
+      the fill mode decides what it shows. There are five: <code>black</code>,
+      <code>white</code>, <code>transparent</code>, <code>hold</code> and <code>wrap</code>.
+      Use wrap for loops.
     </p>
   </div>
 
@@ -892,44 +524,42 @@
       <tr>
         <td>black</td>
         <td>Solid black pixel</td>
-        <td>Default. Shows the clip boundaries explicitly as a fill zone that sweeps across the frame.</td>
+        <td>Default. The clip boundary shows up as a black zone that sweeps across the frame.</td>
       </tr>
       <tr>
         <td>white</td>
         <td>Solid white pixel</td>
-        <td>Same as black; for lighter-background compositions.</td>
+        <td>Like black, for light compositions.</td>
       </tr>
       <tr>
         <td>transparent</td>
         <td>Alpha=0 pixel (RGBA output)</td>
-        <td>Compositing workflows. Requires <code>.mov</code> (ProRes 4444) or <code>.png</code>/<code>.tiff</code> sequence.</td>
+        <td>Compositing. Needs <code>.mov</code> (ProRes 4444) or a <code>.png</code>/<code>.tiff</code> sequence.</td>
       </tr>
       <tr>
         <td>hold</td>
         <td>Clamp to first/last frame</td>
-        <td>Freeze-frame at clip boundaries. Avoids black zones without looping.</td>
+        <td>Freezes on the first or last frame. No black zones, no loop.</td>
       </tr>
       <tr>
         <td>wrap</td>
         <td><code>frame_index % frame_count</code></td>
-        <td><strong>Seamless infinite loop.</strong> Out-of-range indices wrap around, so the output plays forever without a seam.</td>
+        <td><strong>Loops.</strong> Indices past either end wrap around, so the output repeats with no seam.</td>
       </tr>
     </tbody>
   </table>
 
   <h3>How wrap looping works</h3>
   <p>
-    With <code>--fill black</code>, the lagging bands reference negative frames
-    at the start of the clip — a black fill zone sweeps across the output from
-    right to left. With <code>--fill wrap</code>, those same indices are mapped
-    to <code>index % 992</code>, connecting the end of the clip to its beginning.
-    The output video has no seam and can play indefinitely in an installation loop.
+    At the start of the clip the lagging bands ask for negative frames. With
+    <code>--fill black</code> that shows as a black zone sweeping from right to left.
+    With <code>--fill wrap</code> those indices become <code>index % 992</code>,
+    which joins the end of the clip to its start. The output has no seam.
   </p>
   <p>
-    Note: the black band visible in the <code>--fill black</code> examples below
-    is also partly a property of the source footage — the clip opens and closes
-    on near-black frames. This makes the fill zone especially clean here and
-    usefully illustrates the temporal boundary sweeping across the frame.
+    Some of the black in the <code>--fill black</code> examples comes from the
+    footage itself. The clip opens and closes on near-black frames, which makes
+    the boundary easy to follow here.
   </p>
 
   <div class="fill-compare">
@@ -937,15 +567,15 @@
       <video preload="none" data-src="2020-slitscan-ramp.mp4"      autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">fill black (default)</div>
-        <p class="card-caption">The lagging-edge fill zone sweeps left as the clip progresses and resets at the end.</p>
+        <p class="card-caption">The black zone sweeps left as the clip plays and resets at the end.</p>
         <div class="card-cmd">--fill black</div>
       </div>
     </div>
     <div class="card">
       <video preload="none" data-src="2020-slitscan-ramp-wrap.mp4"  autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">fill wrap — infinite loop</div>
-        <p class="card-caption">Same parameters; every band is always populated. The clip loops without any visible seam.</p>
+        <div class="card-tag">fill wrap</div>
+        <p class="card-caption">Same settings. Every band always has footage, and the loop point is invisible.</p>
         <div class="card-cmd">--fill wrap</div>
       </div>
     </div>
@@ -955,10 +585,9 @@
     <div class="card">
       <video preload="none" data-src="2020-wrap-loop.mp4"           autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">wrap loop — installation demo</div>
+        <div class="card-tag">wrap loop</div>
         <p class="card-caption">
-          Designed for continuous video art playback. The dancer's motion cycles through the temporal rake
-          indefinitely — no hard cut, no fill zone, no visible loop point.
+          Wrap fill, full width. No black zone and no visible loop point.
         </p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --fill wrap</div>
       </div>
@@ -971,28 +600,23 @@
 ═══════════════════════════════════════════ -->
 <section class="section" id="modulation">
   <div class="sec-hd">
-    <div class="sec-num">§ 07</div>
-    <h2>Modulation — the LFO system</h2>
+    <h2>Modulation</h2>
     <p class="sec-lead">
-      Any render parameter can be driven by an oscillator that varies as a function
-      of output time. The modulation engine resolves new parameters before each frame,
-      keeping the core formula unchanged.
+      An oscillator can drive any render parameter over the course of the output.
+      Before each frame the engine works out the new values, then runs the same
+      formula as before.
     </p>
   </div>
 
-  <div class="formula">
-    <div class="label">Modulation formula</div>
-<span class="hl">resolved(t)</span>  =  base  +  offset  +  depth × osc(2π · cycles_per_frame · t  +  phase)
+  <div class="formula"><div class="label">Modulation formula</div><span class="hl">resolved(t)</span>  =  base  +  offset  +  depth × osc(2π · cycles_per_frame · t  +  phase)
 
-<span class="cm">  dest       — target parameter: vanguard | max_delay | slice_width</span>
-<span class="cm">  osc        — oscillator: sine | triangle</span>
-<span class="cm">  rate units — hz (cycles/sec), cyc (cycles/clip), frames (period in frames)</span>
-  </div>
+<span class="cm">  dest       target parameter: vanguard | max_delay | slice_width</span>
+<span class="cm">  osc        oscillator: sine | triangle</span>
+<span class="cm">  rate units hz (cycles/sec), cyc (cycles/clip), frames (period in frames)</span></div>
 
   <p>
-    Modulation patches are specified inline with <code>--mod</code> or
-    in a YAML file with <code>--mod-file</code>. Multiple patches can be
-    stacked on the same destination.
+    Write patches inline with <code>--mod</code> or put them in a YAML file
+    for <code>--mod-file</code>. You can stack several on one destination.
   </p>
 
   <div class="code-block"><pre><span class="cm"># Oscillate the vanguard position with a 0.1 Hz sine, ±0.4 amplitude</span>
@@ -1004,84 +628,84 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
 slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   --mod <span class="st">"max_delay=sine:rate=0.25hz,depth=400"</span>
 
-<span class="cm"># Both simultaneously — compound modulation</span>
+<span class="cm"># Both at once</span>
 slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   --profile tent <span class="kw">\</span>
   --mod <span class="st">"vanguard=sine:rate=0.1hz,depth=0.4"</span> <span class="kw">\</span>
   --mod <span class="st">"max_delay=sine:rate=0.05hz,depth=300"</span></pre></div>
 
-  <h3>Modulated delay — temporal spread breathes</h3>
+  <h3>Oscillating max delay</h3>
   <div class="grid-2">
     <div class="card">
       <video preload="none" data-src="2020-ramp-moddelay.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">mod max_delay · sine · 0.25 Hz · depth 400</div>
-        <p class="card-caption">The temporal window expands and contracts sinusoidally. At its widest, the rake spans deep time; at its narrowest, the image nearly collapses to a single moment.</p>
+        <div class="card-tag">max delay LFO · sine · 0.25 Hz · depth 400</div>
+        <p class="card-caption">The window widens and narrows on a sine. At its narrowest the image is almost a single moment.</p>
         <div class="card-cmd">--mod "max_delay=sine:rate=0.25hz,depth=400"</div>
       </div>
     </div>
     <div class="card">
       <video preload="none" data-src="2020-ramp-moddelay-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">mod max_delay · wrap</div>
-        <p class="card-caption">Same modulation with wrap fill. The breathing temporal spread loops without interruption.</p>
+        <div class="card-tag">max delay LFO · wrap</div>
+        <p class="card-caption">The same with wrap fill, so it loops.</p>
         <div class="card-cmd">--mod "max_delay=sine:rate=0.25hz,depth=400" --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <h3>Modulated vanguard — the rake shifts</h3>
+  <h3>Oscillating the vanguard position</h3>
   <div class="grid-2">
     <div class="card">
       <video preload="none" data-src="2020-tent-modvanguard.mp4"     autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">tent · mod vanguard · sine · 0.1 Hz · depth 0.4</div>
-        <p class="card-caption">The tent profile's peak oscillates — the temporal fold shifts back and forth, swinging the center of symmetry across the frame.</p>
+        <div class="card-tag">tent · vanguard LFO · sine · 0.1 Hz · depth 0.4</div>
+        <p class="card-caption">The tent's peak swings back and forth, moving the fold across the frame.</p>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4"</div>
       </div>
     </div>
     <div class="card">
       <video preload="none" data-src="2020-tent-modvanguard-wrap.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">tent · mod vanguard · wrap</div>
+        <div class="card-tag">tent · vanguard LFO · wrap</div>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <h3>Compound modulation — both destinations</h3>
+  <h3>Oscillating both</h3>
   <div class="grid-2">
     <div class="card">
       <video preload="none" data-src="2020-tent-both-mod.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">tent · mod vanguard + mod max_delay</div>
-        <p class="card-caption">Two independent oscillators — vanguard at 0.1 Hz and max_delay at 0.05 Hz — produce compound motion with a beat period of ~20s.</p>
+        <div class="card-tag">tent · vanguard LFO + max delay LFO</div>
+        <p class="card-caption">Vanguard at 0.1 Hz and max_delay at 0.05 Hz. The combined motion repeats every 20s.</p>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --mod "max_delay=sine:rate=0.05hz,depth=300"</div>
       </div>
     </div>
     <div class="card">
       <video preload="none" data-src="2020-tent-both-mod-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">tent · compound mod · wrap</div>
+        <div class="card-tag">tent · both LFOs · wrap</div>
         <div class="card-cmd">--profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --mod "max_delay=sine:rate=0.05hz,depth=300" --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <h3>Y-axis modulation</h3>
+  <h3>On the y axis</h3>
   <div class="grid-2">
     <div class="card">
       <video preload="none" data-src="2020-y-modvanguard.mp4"        autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">axis y · mod vanguard · sine</div>
-        <p class="card-caption">The modulated vanguard on a y-axis scan causes the temporal fold to ripple horizontally, tracing the dancer's vertical movements through time.</p>
+        <div class="card-tag">axis y · vanguard LFO · sine</div>
+        <p class="card-caption">On the y axis the moving vanguard sends the fold up and down the frame, across the dancer's vertical movement.</p>
         <div class="card-cmd">--axis y --mod "vanguard=sine:rate=0.1hz,depth=0.4"</div>
       </div>
     </div>
     <div class="card">
       <video preload="none" data-src="2020-y-modvanguard-wrap.mp4"   autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">axis y · mod vanguard · wrap</div>
+        <div class="card-tag">axis y · vanguard LFO · wrap</div>
         <div class="card-cmd">--axis y --mod "vanguard=sine:rate=0.1hz,depth=0.4" --fill wrap</div>
       </div>
     </div>
@@ -1093,46 +717,39 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
 ═══════════════════════════════════════════ -->
 <section class="section" id="grid">
   <div class="sec-hd">
-    <div class="sec-num">§ 08</div>
-    <h2>Grid — 2D mosaic slit-scan</h2>
+    <h2>Grid</h2>
     <p class="sec-lead">
-      Standard slit-scan slices the frame into 1D bands along one axis. <strong>Grid mode</strong>
-      splits it into a <code>COLS×ROWS</code> mosaic where every <em>cell</em> reads from
-      its own source frame — each tile is frozen at a different moment, and the whole
-      mosaic animates as the clip plays. At <code>Nx1</code> it reduces to vertical bands,
-      at <code>1xN</code> to horizontal bands.
+      Plain slit-scan cuts the frame into bands along one axis. <strong>Grid mode</strong>
+      cuts it into a <code>COLS×ROWS</code> mosaic and gives every <em>cell</em> its own
+      source frame, and the whole mosaic moves as the clip plays. <code>Nx1</code> is the
+      same as column bands and <code>1xN</code> the same as row bands.
     </p>
   </div>
 
-  <div class="formula">
-    <div class="label">Grid gather — per-cell source frame</div>
-<span class="cm">1D band:  </span><span class="hl">source(band, t)</span>  =  t − delay<span class="hl">[col]</span>            <span class="cm">← a band spans the full height</span>
-<span class="cm">2D grid:  </span><span class="hl">source(cell, t)</span>  =  t − delay<span class="hl">[row, col]</span>       <span class="cm">← every tile its own moment</span>
-  </div>
+  <div class="formula"><div class="label">Grid: source frame per cell</div><span class="cm">1D band:  </span><span class="hl">source(band, t)</span>  =  t − delay<span class="hl">[col]</span>            <span class="cm">← one band spans the full height</span>
+<span class="cm">2D grid:  </span><span class="hl">source(cell, t)</span>  =  t − delay<span class="hl">[row, col]</span>       <span class="cm">← each tile gets its own frame</span></div>
 
   <p>
-    Where each cell's time comes from is configurable. By default the chosen
-    <code>--profile</code> is evaluated across the columns and the rows and combined
-    with <code>--grid-combine</code> (<code>avg</code>, <code>max</code>, <code>min</code>,
-    <code>multiply</code>). With <code>ramp</code> averaged across both axes the result is
-    a diagonal time-field: read corner-to-corner and you read through the whole clip.
-    On this footage the static parkway stays coherent while the moving figure
-    fragments tile-by-tile into different moments.
+    By default the engine runs <code>--profile</code> across the columns and across
+    the rows, then merges the two with <code>--grid-combine</code> (<code>avg</code>,
+    <code>max</code>, <code>min</code> or <code>multiply</code>). Average two ramps and you
+    get a diagonal. Read it corner to corner and you go through the whole clip.
+    The parkway doesn't move, so it stays whole. The figure breaks up tile by tile.
   </p>
 
-  <h3>Grid size — from four moments to a near-continuous field</h3>
+  <h3>Grid size</h3>
   <p>
-    Same diagonal delay field (<code>ramp</code>, averaged, <code>--fill wrap</code> so
-    every tile always shows real footage); only the tile count changes. Coarse grids
-    quantize the clip into a few stark moments; fine grids approach a smooth temporal gradient.
+    The same diagonal each time (<code>ramp</code>, averaged, with <code>--fill wrap</code>
+    so no tile goes black). Only the tile count changes. A coarse grid shows a few
+    moments. A fine one gets close to a smooth gradient.
   </p>
 
   <div class="grid-3">
     <div class="card">
       <video preload="none" data-src="2020-grid-2x2.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">2 × 2 — four moments</div>
-        <p class="card-caption">The clip quartered in time: each quadrant is a different second of the dance, the figure split across the seam.</p>
+        <div class="card-tag">2 × 2</div>
+        <p class="card-caption">Four moments, one per quadrant. The figure splits at the seams.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 2x2 --fill wrap</div>
       </div>
     </div>
@@ -1140,7 +757,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-4x4.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">4 × 4</div>
-        <p class="card-caption">Sixteen tiles along the diagonal time-field. The body begins to shred into staggered copies of itself.</p>
+        <p class="card-caption">Sixteen tiles. The body starts to break into staggered copies of itself.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 4x4 --fill wrap</div>
       </div>
     </div>
@@ -1148,7 +765,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-8x8.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">8 × 8</div>
-        <p class="card-caption">Static background reads nearly continuous across tiles; only the moving figure betrays the per-tile time offset.</p>
+        <p class="card-caption">The background looks almost continuous. Only the moving figure shows the offsets.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 8x8 --fill wrap</div>
       </div>
     </div>
@@ -1156,7 +773,7 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-16x16.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">16 × 16</div>
-        <p class="card-caption">The diagonal gradient is now legible as a smooth wash of time across the frame.</p>
+        <p class="card-caption">The diagonal reads as one gradient.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 16x16 --fill wrap</div>
       </div>
     </div>
@@ -1164,17 +781,17 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-32x18.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">32 × 18</div>
-        <p class="card-caption">Fine tiling approaches a continuous per-pixel surface — the grid dissolving back toward classic slit-scan.</p>
+        <p class="card-caption">Close to plain per-column slit-scan.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 32x18 --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <h3>Delay shape — a radial time field</h3>
+  <h3>Tent profile, combined with max</h3>
   <p>
-    The delay field need not be a ramp. A <code>tent</code> profile, combined with
-    <code>max</code> across the two axes, puts the <em>vanguard</em> (time zero, "now")
-    at the center cell and rakes backward toward the corners — concentric rings of time.
+    The field doesn't have to be a ramp. A <code>tent</code> merged with
+    <code>max</code> puts the <em>vanguard</em> (delay 0, the present) in the center
+    and gets older toward the corners, in rings.
   </p>
 
   <div class="grid-1">
@@ -1182,26 +799,26 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-tent-radial.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">10 × 10 · tent · combine max</div>
-        <p class="card-caption">Center tiles show the present; time recedes outward to the corners. The figure passing through the center stays current while its echoes lag at the edges.</p>
+        <p class="card-caption">The center tiles show the present and the corners show the past. When the figure crosses the center it is current, and its echoes trail at the edges.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --grid 10x10 --profile tent --grid-combine max --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <h3>Spatial LFO fields — time driven by the cell's position</h3>
+  <h3>Oscillators across the grid</h3>
   <p>
-    The modulation oscillators from <a href="#modulation">§ 07</a> can drive the grid too —
-    but here their phase runs over the cell's grid position instead of output time.
-    Each <code>--grid-mod</code> is an oscillator on the <code>col</code> or <code>row</code>
-    axis (<code>rate</code> in cycles across that axis); contributions sum, then scale to
-    <code>--max-delay</code>. One oscillator per axis gives an interference field of times.
+    The oscillators from <a href="#modulation">Modulation</a> work on the grid too. Here
+    their phase follows the cell's position instead of output time. Each
+    <code>--grid-mod</code> runs along <code>col</code> or <code>row</code>, with
+    <code>rate</code> counted in cycles across that axis. The engine adds them up and
+    scales the sum to <code>--max-delay</code>.
   </p>
 
-  <div class="code-block"><pre><span class="cm"># One sine across the columns → vertical stripes of oscillating time</span>
+  <div class="code-block"><pre><span class="cm"># One sine across the columns → vertical stripes</span>
 slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
   --grid-mod <span class="st">"col=sine:rate=2,depth=1"</span> --max-delay <span class="st">400</span> --fill wrap
 
-<span class="cm"># A sine on each axis → a 2D plaid interference field</span>
+<span class="cm"># A sine on each axis → plaid</span>
 slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
   --grid-mod <span class="st">"col=sine:rate=2,depth=0.5"</span> <span class="kw">\</span>
   --grid-mod <span class="st">"row=sine:rate=2,depth=0.5"</span> --max-delay <span class="st">400</span> --fill wrap</pre></div>
@@ -1211,7 +828,7 @@ slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-lfo-stripes.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">col sine · rate 2 · depth 1</div>
-        <p class="card-caption">A single oscillator across the columns: each vertical strip of tiles is frozen at an oscillating moment, so time waves left-to-right.</p>
+        <p class="card-caption">One oscillator across the columns. Each column of tiles gets a delay from the sine, so the delay waves from left to right.</p>
         <div class="card-cmd">--grid 16x16 --grid-mod "col=sine:rate=2,depth=1" --max-delay 400</div>
       </div>
     </div>
@@ -1219,7 +836,7 @@ slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-lfo-plaid.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">col + row sine · plaid</div>
-        <p class="card-caption">Sines on both axes sum into a 2D interference field — tiles ripple in time along a woven, plaid-like pattern.</p>
+        <p class="card-caption">A sine on each axis. The two add up to a plaid.</p>
         <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.5" --grid-mod "row=sine:rate=2,depth=0.5"</div>
       </div>
     </div>
@@ -1227,23 +844,21 @@ slitscan render 2020.mp4 out.mp4 --grid 16x16 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-lfo-tri.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">triangle · both axes</div>
-        <p class="card-caption">Triangle oscillators give a harder, angular time-field — sharper boundaries between temporal zones than the sine plaid.</p>
+        <p class="card-caption">Triangles instead of sines. The edges between zones are sharper than the sine plaid.</p>
         <div class="card-cmd">--grid 20x12 --grid-mod "col=triangle:rate=3,depth=0.6" --grid-mod "row=triangle:rate=2,depth=0.4"</div>
       </div>
     </div>
   </div>
 
-  <h3>Dual modulation — an oscillator on each axis</h3>
+  <h3>One oscillator per axis</h3>
   <p>
-    The richest fields come from <em>two</em> <code>--grid-mod</code>s — one on
-    <code>col</code>, one on <code>row</code> — summed per cell. The two oscillators need
-    not match: different rates, waveforms, phases, and depths between the axes carve very
-    different temporal terrains out of the same footage. Because contributions sum and then
-    clamp to <code>[0, max-delay]</code>, pushing both depths high produces flat temporal
-    plateaus with hard walls; keeping them low gives smooth interference.
+    Use two <code>--grid-mod</code>s, one on <code>col</code> and one on <code>row</code>,
+    and each cell gets their sum. Rate, waveform, phase and depth can differ per axis.
+    The sum clamps to <code>[0, max-delay]</code>. High depths on both give flat
+    plateaus with hard edges. Low depths stay smooth.
   </p>
 
-  <div class="code-block"><pre><span class="cm"># Two oscillators, one per axis — the general dual-modulation form</span>
+  <div class="code-block"><pre><span class="cm"># Two oscillators, one per axis</span>
 slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
   --grid-mod <span class="st">"col=sine:rate=4,depth=0.5"</span> <span class="kw">\</span>   <span class="cm"># fast columns</span>
   --grid-mod <span class="st">"row=sine:rate=1,depth=0.5"</span> <span class="kw">\</span>   <span class="cm"># slow rows</span>
@@ -1254,7 +869,7 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-crossrate.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">cross rates · col 4 / row 1</div>
-        <p class="card-caption">Columns ripple fast against a slow row gradient — vertical bands of staggered time drifting top to bottom.</p>
+        <p class="card-caption">Fast columns over a slow row gradient. Vertical bands drift from top to bottom.</p>
         <div class="card-cmd">--grid 24x24 --grid-mod "col=sine:rate=4,depth=0.5" --grid-mod "row=sine:rate=1,depth=0.5"</div>
       </div>
     </div>
@@ -1262,7 +877,7 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-mixed.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">mixed waveforms · sine × triangle</div>
-        <p class="card-caption">A soft sine on the columns crossed with a hard triangle on the rows: rounded horizontal flow, angular vertical steps.</p>
+        <p class="card-caption">A sine on the columns and a triangle on the rows. Round across, angular down.</p>
         <div class="card-cmd">--grid-mod "col=sine:rate=3,depth=0.5" --grid-mod "row=triangle:rate=3,depth=0.5"</div>
       </div>
     </div>
@@ -1270,7 +885,7 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-phase.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">phase offset · row +0.25</div>
-        <p class="card-caption">Equal sines with a quarter-cycle offset on one axis — the interference peaks shift onto the diagonal.</p>
+        <p class="card-caption">Two equal sines, one offset by a quarter cycle. The peaks move onto the diagonal.</p>
         <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.5" --grid-mod "row=sine:rate=2,phase=0.25,depth=0.5"</div>
       </div>
     </div>
@@ -1278,7 +893,7 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-checker.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">fine checker · rate 6 both · 32×32</div>
-        <p class="card-caption">High rate on a dense grid shatters the figure into a confetti of small tiles, each frozen at its own moment.</p>
+        <p class="card-caption">A high rate on a dense grid breaks the figure into small tiles, each from its own frame.</p>
         <div class="card-cmd">--grid 32x32 --grid-mod "col=sine:rate=6,depth=0.5" --grid-mod "row=sine:rate=6,depth=0.5" --max-delay 300</div>
       </div>
     </div>
@@ -1286,7 +901,7 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-weighted.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">depth-weighted · col 0.8 / row 0.2</div>
-        <p class="card-caption">An unequal mix: the column oscillator dominates while the row adds a faint cross-ripple — directional, not symmetric.</p>
+        <p class="card-caption">The column oscillator dominates. The row adds a faint ripple across it.</p>
         <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=0.8" --grid-mod "row=sine:rate=3,depth=0.2"</div>
       </div>
     </div>
@@ -1294,20 +909,20 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
       <video preload="none" data-src="2020-grid-dual-overdrive.mp4" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">overdrive · depth 1 both · max-delay 600</div>
-        <p class="card-caption">Both axes at full depth: the summed field clamps into broad temporal plateaus separated by sharp walls — blocky, stepped time.</p>
+        <p class="card-caption">Both at full depth. The sum clamps into wide flat areas with sharp edges between them.</p>
         <div class="card-cmd">--grid-mod "col=sine:rate=2,depth=1" --grid-mod "row=sine:rate=2,depth=1" --max-delay 600</div>
       </div>
     </div>
   </div>
 
-  <div class="callout">
-    <strong>Implementation:</strong> grid mode reuses the same source-frame formula, fill
-    modes (<code>wrap</code> keeps every tile on real footage), and oscillator catalog as
-    the 1D engine — it only generalizes the gather from bands to tiles. Dual modulation is
-    just two <code>--grid-mod</code> entries whose per-cell contributions sum, exactly as
-    multiple <code>--mod</code> entries sum in 1D. Cells need random access to any frame, so
-    grid mode always uses the full in-memory buffer.
-  </div>
+  <h3>Implementation</h3>
+  <p>
+    The source-frame formula, fill
+    modes and oscillators are the same. The only change is that it gathers tiles
+    instead of bands. Two <code>--grid-mod</code> entries add up per cell the way two
+    <code>--mod</code> entries add up for bands. Any cell can ask for any frame, so grid
+    mode always keeps the whole clip in memory.
+  </p>
 </section>
 
 <!-- ═══════════════════════════════════════════
@@ -1315,129 +930,120 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
 ═══════════════════════════════════════════ -->
 <section class="section" id="collapse">
   <div class="sec-hd">
-    <div class="sec-num">§ 09</div>
-    <h2>Collapse — strip photography</h2>
+    <h2>Collapse</h2>
     <p class="sec-lead">
-      The <code>collapse</code> command accumulates a single slit's history
-      across the entire clip into one image. Each frame contributes one column
-      (or row) at the slit position, laid sequentially — time becomes the
-      horizontal axis, space the vertical.
+      <code>collapse</code> records one slit over the whole clip and saves it
+      as a single image. Each frame adds one column (or row) from the slit
+      position, so time runs across the image and space runs down it.
     </p>
   </div>
 
   <p>
-    This is the technique of photofinish cameras and 19th-century chronophotography:
-    a fixed slit records motion as it passes, the film advances, and the result
-    is a spatial-temporal composite in which stillness appears sharp and movement
-    creates smeared streaks. Different slit positions reveal different aspects
-    of the subject.
+    Photo-finish cameras work the same way. Still things come out as straight
+    streaks. Things that move through the slit come out as shapes.
   </p>
 
-  <div class="formula">
-    <div class="label">Collapse — output pixel formula</div>
-<span class="hl">output[t, y]</span>  =  <span class="hl">input[t][y, slit_x]</span>   <span class="cm">— axis x: one column per frame</span>
-<span class="hl">output[x, t]</span>  =  <span class="hl">input[t][slit_y, x]</span>   <span class="cm">— axis y: one row per frame</span>
+  <div class="formula"><div class="label">Collapse: output pixel</div><span class="hl">output[t, y]</span>  =  <span class="hl">input[t][y, slit_x]</span>   <span class="cm">axis x: one column per frame</span>
+<span class="hl">output[x, t]</span>  =  <span class="hl">input[t][slit_y, x]</span>   <span class="cm">axis y: one row per frame</span>
 <span class="cm">
-  output width  = frame_count (992 pixels — one per frame)
-  output height = source height (720px) or width (1280px)</span>
-  </div>
+  output width  = frame_count (992 pixels, one per frame)
+  output height = source height (720px) or width (1280px)</span></div>
 
-  <h3>Axis X — vertical slit, time runs horizontally</h3>
+  <h3>Axis x, vertical slit</h3>
   <p>
-    Each image below is 992 pixels wide (one column per frame) and 720 pixels tall.
-    The slit position selects which vertical slice of the original frame is accumulated.
-    Moving the slit across the dancer's body traces different planes of motion.
+    Each image is 992 pixels wide, one column per frame, and 720 tall.
+    The slit position picks which column of the source frame gets recorded.
   </p>
 
   <div class="grid-3">
     <div class="card card-img-sq">
-      <img src="2020-collapse-left.png"      alt="Collapse — slit left" loading="lazy">
+      <img src="2020-collapse-left.png"      alt="Collapse, slit left" loading="lazy">
       <div class="card-body">
-        <div class="card-tag">slit-position 0.2 — left of frame</div>
-        <p class="card-caption">Background and edge of the parkway. Sparse motion; parked cars produce faint vertical striations.</p>
+        <div class="card-tag">slit-position 0.2 · left</div>
+        <p class="card-caption">The edge of the parkway. Little moves here, and parked cars leave faint stripes.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.2</div>
       </div>
     </div>
     <div class="card card-img-sq">
-      <img src="2020-collapse-body.png"      alt="Collapse — body center" loading="lazy">
+      <img src="2020-collapse-body.png"      alt="Collapse, slit through the torso" loading="lazy">
       <div class="card-body">
         <div class="card-tag">slit through dancer's torso</div>
-        <p class="card-caption">The dancer's cyclical movement leaves a sinusoidal trace in the image. Each repetition of the dance appears as a periodic waveform.</p>
+        <p class="card-caption">The dance repeats, so the trace looks like a wave. Each repeat is one cycle.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.4</div>
       </div>
     </div>
     <div class="card card-img-sq">
-      <img src="2020-collapse-center.png"    alt="Collapse — center" loading="lazy">
+      <img src="2020-collapse-center.png"    alt="Collapse, slit at center" loading="lazy">
       <div class="card-body">
-        <div class="card-tag">slit-position 0.5 — frame center</div>
-        <p class="card-caption">Centered slit through the dancer's midline. The full 33-second performance visible as a temporal panorama, left to right.</p>
+        <div class="card-tag">slit-position 0.5 · center</div>
+        <p class="card-caption">The slit runs down the dancer's middle. All 33 seconds, left to right.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.5</div>
       </div>
     </div>
     <div class="card card-img-sq">
-      <img src="2020-collapse-center-rev.png" alt="Collapse — center reverse" loading="lazy">
+      <img src="2020-collapse-center-rev.png" alt="Collapse, slit at center, reversed" loading="lazy">
       <div class="card-body">
         <div class="card-tag">slit-position 0.5 · direction reverse</div>
-        <p class="card-caption">Same slit position with time accumulated right-to-left. The performance reads in reverse — the end of the clip appears at the left edge.</p>
+        <p class="card-caption">The same slit with time running right to left, so the end of the clip is on the left.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.5 --direction reverse</div>
       </div>
     </div>
     <div class="card card-img-sq">
-      <img src="2020-collapse-right.png"     alt="Collapse — right" loading="lazy">
+      <img src="2020-collapse-right.png"     alt="Collapse, slit right" loading="lazy">
       <div class="card-body">
-        <div class="card-tag">slit-position 0.8 — right of frame</div>
-        <p class="card-caption">Edge of frame; cars passing on the right occasionally break through as horizontal streaks.</p>
+        <div class="card-tag">slit-position 0.8 · right</div>
+        <p class="card-caption">Near the edge. Now and then a passing car cuts through as a streak.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.8</div>
       </div>
     </div>
     <div class="card card-img-sq">
-      <img src="2020-collapse-wide.png"      alt="Collapse — wide slit" loading="lazy">
+      <img src="2020-collapse-wide.png"      alt="Collapse, wide slit" loading="lazy">
       <div class="card-body">
         <div class="card-tag">wide slit</div>
-        <p class="card-caption">Wider slit averages multiple columns per frame, softening edge detail and integrating spatial information into the temporal record.</p>
+        <p class="card-caption">An 8px slit averages several columns per frame, which softens the edges.</p>
         <div class="card-cmd">slitscan collapse 2020.mp4 out.png --slit-position 0.5 --slice-width 8</div>
       </div>
     </div>
   </div>
 
-  <h3>Axis Y — horizontal slit, time runs vertically</h3>
+  <h3>Axis y, horizontal slit</h3>
   <p>
-    Switching to <code>--axis y</code> accumulates horizontal rows instead of columns.
-    The output is 1280 pixels wide and 991 pixels tall (one row per frame).
-    The slit position now selects a height in the frame — feet, waist, chest, or head —
-    revealing how different parts of the body move independently over time.
+    <code>--axis y</code> records rows instead of columns. The output is 1280
+    pixels wide and 991 tall, one row per frame. The slit position now picks a
+    height in the frame, like the feet, waist or chest, and each part of the
+    body leaves a different trace.
   </p>
 
   <div class="grid-4">
     <div class="card card-img-land">
-      <img src="2020-collapse-y-feet.png"    alt="Collapse Y — feet" loading="lazy">
+      <img src="2020-collapse-y-feet.png"    alt="Collapse on the y axis, slit at the feet" loading="lazy">
       <div class="card-body">
         <div class="card-tag">axis y · slit at feet</div>
-        <p class="card-caption">High-frequency stepping motion; feet leave rapid oscillating traces.</p>
+        <p class="card-caption">Fast steps leave a tight, quick trace.</p>
         <div class="card-cmd">--axis y --slit-position 0.85</div>
       </div>
     </div>
     <div class="card card-img-land">
-      <img src="2020-collapse-y-waist.png"   alt="Collapse Y — waist" loading="lazy">
+      <img src="2020-collapse-y-waist.png"   alt="Collapse on the y axis, slit at the waist" loading="lazy">
       <div class="card-body">
         <div class="card-tag">axis y · slit at waist</div>
-        <p class="card-caption">Lower-frequency lateral hip motion. The waveform period corresponds to the choreography's rhythm.</p>
+        <p class="card-caption">Slower side-to-side hip motion. The wave keeps time with the choreography.</p>
         <div class="card-cmd">--axis y --slit-position 0.65</div>
       </div>
     </div>
     <div class="card card-img-land">
-      <img src="2020-collapse-y-mid.png"     alt="Collapse Y — mid" loading="lazy">
+      <img src="2020-collapse-y-mid.png"     alt="Collapse on the y axis, slit at mid-body" loading="lazy">
       <div class="card-body">
         <div class="card-tag">axis y · slit at mid-body</div>
-        <p class="card-caption">Composite torso motion — a blend of hip sway and arm movement at this height.</p>
+        <p class="card-caption">Hip sway and arm movement mixed together.</p>
         <div class="card-cmd">--axis y --slit-position 0.5</div>
       </div>
     </div>
     <div class="card card-img-land">
-      <img src="2020-collapse-y-upper.png"   alt="Collapse Y — upper" loading="lazy">
+      <img src="2020-collapse-y-upper.png"   alt="Collapse on the y axis, slit at the upper body" loading="lazy">
       <div class="card-body">
         <div class="card-tag">axis y · slit at upper body</div>
-        <p class="card-caption">Arms and shoulders: wider lateral range, more complex trajectory than lower body.</p>
+        <p class="card-caption">Arms and shoulders cover more ground than the lower body, and the trace is busier.</p>
         <div class="card-cmd">--axis y --slit-position 0.25</div>
       </div>
     </div>
@@ -1449,24 +1055,20 @@ slitscan render 2020.mp4 out.mp4 --grid 24x24 <span class="kw">\</span>
 ═══════════════════════════════════════════ -->
 <section class="section" id="gif">
   <div class="sec-hd">
-    <div class="sec-num">§ 10</div>
-    <h2>Animated GIF output</h2>
+    <h2>GIF output</h2>
     <p class="sec-lead">
-      Pass a <code>.gif</code> extension and the encoder switches to Pillow's
-      palette quantizer: 256 adaptive colors per frame, Floyd-Steinberg dithering,
-      infinite loop. No flags needed.
+      Give the output a <code>.gif</code> extension and the encoder switches to
+      Pillow's palette quantizer, with 256 colors per frame, Floyd-Steinberg
+      dithering and looping on. You don't need any flags.
     </p>
   </div>
 
   <p>
-    GIF encoding reduces each frame to an 8-bit palette independently.
-    The dithering introduces a characteristic grain that reads as motion artifact
-    and complements the temporal distortion.
-    Files are large at source resolution — use <code>--resize</code> and
-    <code>--fps</code> for web deployment.
+    Each frame gets its own 8-bit palette. At full resolution the files are big, so use
+    <code>--resize</code> and <code>--fps</code> for anything going on the web.
   </p>
 
-  <div class="code-block"><pre><span class="cm"># Output format is inferred from extension — no codec flag needed</span>
+  <div class="code-block"><pre><span class="cm"># The extension sets the format</span>
 slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap
 slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <span class="st">640x360</span> --fps <span class="st">15</span></pre></div>
 
@@ -1475,15 +1077,15 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       <video preload="none" data-src="2020-ramp-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">ramp · wrap · gif</div>
-        <p class="card-caption">Classic ramp profile as an infinite GIF. 256-color dithering visible at full scale.</p>
+        <p class="card-caption">The ramp as a looping GIF. At full size you can see the dithering.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.gif --fill wrap</div>
       </div>
     </div>
     <div class="gif-card">
       <video preload="none" data-src="2020-tent-mod-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">tent · mod vanguard · wrap · gif</div>
-        <p class="card-caption">Modulated tent profile — the temporal fold shifts while the palette flickers at peaks of oscillation.</p>
+        <div class="card-tag">tent · vanguard LFO · wrap · gif</div>
+        <p class="card-caption">The moving tent. The palette flickers at the peaks.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.gif --profile tent --mod "vanguard=sine:rate=0.1hz,depth=0.4" --fill wrap</div>
       </div>
     </div>
@@ -1491,7 +1093,7 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
       <video preload="none" data-src="2020-y-loop.webm" autoplay muted loop playsinline></video>
       <div class="card-body">
         <div class="card-tag">axis y · wrap · gif</div>
-        <p class="card-caption">Y-axis scan as GIF. Horizontal banding from the row-slicer is amplified by palette quantization.</p>
+        <p class="card-caption">The y axis as a GIF. The palette makes the row bands stronger.</p>
         <div class="card-cmd">slitscan render 2020.mp4 out.gif --axis y --fill wrap</div>
       </div>
     </div>
@@ -1503,38 +1105,29 @@ slitscan render 2020.mp4 <span class="st">out.gif</span> --fill wrap --resize <s
 ═══════════════════════════════════════════ -->
 <section class="section" id="trumbull">
   <div class="sec-hd">
-    <div class="sec-num">§ 11</div>
-    <h2>Trumbull — fixed-slit gather</h2>
+    <h2>Fixed slit</h2>
     <p class="sec-lead">
-      In standard slit-scan, each output column is gathered from its own column
-      position in its source frame. The Trumbull mode changes the gather so that
-      every output column is taken from a <em>single fixed slit</em> in each source
-      frame — replicating the technique used for the <em>2001: A Space Odyssey</em>
-      Stargate corridor sequence.
+      In plain slit-scan, output column x comes from column x of its source frame.
+      Trumbull mode takes every output column from <em>one fixed slit</em> instead.
+      It's named after the slit-scan rig built for the Stargate sequence in
+      <em>2001: A Space Odyssey</em>.
     </p>
   </div>
 
-  <div class="formula">
-    <div class="label">Normal vs Trumbull gather</div>
-<span class="cm">Normal:   </span><span class="hl">output[x]</span>  =  source_frame[t − delay(x)]<span class="hl">[x]</span>          <span class="cm">← each col from its own position</span>
-<span class="cm">Trumbull: </span><span class="hl">output[x]</span>  =  source_frame[t − delay(x)]<span class="hl">[slit_x]</span>      <span class="cm">← all cols from same slit position</span>
-  </div>
+  <div class="formula"><div class="label">Normal vs fixed slit</div><span class="cm">Normal:   </span><span class="hl">output[x]</span>  =  source_frame[t − delay(x)]<span class="hl">[x]</span>          <span class="cm">← each col from its own position</span>
+<span class="cm">Trumbull: </span><span class="hl">output[x]</span>  =  source_frame[t − delay(x)]<span class="hl">[slit_x]</span>      <span class="cm">← all cols from same slit position</span></div>
 
   <p>
-    The result: a single vertical slit of the source footage — one specific
-    <em>column</em> of the dancer, picked by <code>--slit-source</code> — is
-    gathered from 1280 different moments in time and laid across the full width
-    of the output frame. Rather than seeing a spatial panorama, you see a
-    <strong>temporal panorama of a single spatial point</strong>.
+    <code>--slit-source</code> picks one <em>column</em> of the footage. The engine
+    reads that column from 1280 different frames and lays them side by side across
+    the output. You're looking at <strong>one column over time</strong>.
   </p>
 
   <p>
-    When combined with a ramp delay, the slit at position <code>x=640</code> (center)
-    sampled from frames <code>t, t-1, t-2, ... t-1279</code> is tiled across the
-    full output width, with each column showing a different moment. The
-    characteristic visual is streaks and halos radiating from motion paths through
-    the fixed slit — the figure's arms sweep ghostly contrails; static background
-    elements produce clean vertical bands.
+    With a ramp, the center column (<code>x=640</code>) from frames
+    <code>t, t-1, t-2, ... t-1279</code> fills the output from left to right.
+    Whatever moves through the slit, like the dancer's arms, leaves streaks.
+    Whatever stays still becomes plain stripes.
   </p>
 
   <div class="code-block"><pre><span class="cm"># Slit at frame center, gathering ~42s of history from that one column</span>
@@ -1543,50 +1136,47 @@ slitscan render 2020.mp4 out.mp4 <span class="kw">\</span>
   --profile ramp <span class="kw">\</span>
   --fill wrap
 
-<span class="cm"># Slit at left edge of dancer (approx.)</span>
+<span class="cm"># Slit near the dancer's left edge</span>
 slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.35</span> --profile ramp --fill wrap
 
-<span class="cm"># Tent profile + fixed slit: bilateral temporal fold from one spatial point</span>
+<span class="cm"># Tent profile with a fixed slit</span>
 slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --profile tent --fill wrap</pre></div>
 
   <div class="grid-1">
     <div class="card">
       <video preload="none" data-src="2020-trumbull-center.mp4"  autoplay muted loop playsinline></video>
       <div class="card-body">
-        <div class="card-tag">trumbull · slit-source 0.5 · ramp · wrap</div>
+        <div class="card-tag">fixed slit · slit-source 0.5 · ramp · wrap</div>
         <p class="card-caption">
-          The frame center slit (x = 640) is sampled from 1280 different moments and tiled horizontally.
-          The dancer's limbs passing through the slit become horizontal streaks; the parkway background
-          — stationary through the slit — produces clean repeating bands.
-          Motion amplitude and timing become directly readable in the horizontal structure of the image.
+          The center column (x = 640) from 1280 frames, side by side. The dancer's limbs
+          leave streaks as they cross the slit. The parkway behind doesn't move, so it
+          turns into stripes. You can read how far and when the dancer moved from left to right.
         </p>
         <div class="card-cmd">slitscan render 2020.mp4 out.mp4 --slit-source 0.5 --profile ramp --fill wrap</div>
       </div>
     </div>
   </div>
 
-  <div class="callout">
-    <strong>Original technique:</strong> Doug Trumbull and John Whitney Sr. developed fixed-slit
-    slit-scan photographically in the late 1960s, exposing a single frame of film by moving
-    the camera past a lit slit while the slit's background artwork moved on a separate
-    motion-control track. The digital equivalent here collapses that optical process into
-    a single formula: <code>output[x] = source[t − delay(x)][slit_x]</code>.
-  </div>
+  <h3>Background</h3>
+  <p>
+    John Whitney Sr. did early slit-scan work, and
+    Douglas Trumbull built on it for <em>2001</em> in 1968. Each frame was a long
+    exposure. The camera moved toward a slit while lit artwork slid past behind it.
+    This mode doesn't copy that optical setup. It borrows the idea of looking through
+    one slit, as <code>output[x] = source[t − delay(x)][slit_x]</code>.
+  </p>
 </section>
 
 <!-- ───────────────────────────── FOOTER ── -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-left">
-      <div>slitscan CLI — time-displacement rendering toolkit</div>
-      <div>Python 3.11 · PyAV · NumPy · Typer · Pillow</div>
-      <div>Source: <a href="https://github.com/zakhap/slitscan-cli">github.com/zakhap/slitscan-cli</a></div>
-    </div>
-    <div class="footer-right">
-      <div>Source footage: 2020 workout video, 1280×720, 30fps, 992 frames</div>
-      <div>All renders: Apple M-series · ~34s per pass</div>
-    </div>
-  </div>
+  <p>
+    slitscan is a Python 3.11 command-line tool built on PyAV, NumPy, Typer and Pillow.
+    The source is on <a href="https://github.com/zakhap/slitscan-cli">GitHub</a>.
+  </p>
+  <p>
+    Every example on this page uses the same clip, 1280×720 at 30fps, 992 frames long.
+    Each render took about 34 seconds on an Apple M-series Mac.
+  </p>
 </footer>
 
 <script>
@@ -1655,7 +1245,7 @@ slitscan render 2020.mp4 out.mp4 --slit-source <span class="st">0.5</span> --pro
           const id = entry.target.id;
           navLinks.forEach((a) => {
             const active = a.getAttribute('href') === '#' + id;
-            a.style.color = active ? 'var(--dim)' : '';
+            a.classList.toggle('on', active);
           });
         }
       });
